@@ -5,6 +5,7 @@
 !.gitignore
 
 # Root-level project metadata that belongs with the system.
+!README.md
 !WORKSPACE_MAP.md
 
 # Core system source.
