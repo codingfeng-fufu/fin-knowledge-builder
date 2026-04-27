@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内部治理后台</title>
+  <link rel="stylesheet" href="/static/app-shell.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">O</div>
+        <div class="brand-copy">
+          <small>Internal Review & Governance</small>
+          <strong>内部治理后台</strong>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a class="nav-link" href="/">系统首页</a>
+        <a class="nav-link" href="/workspace">问题求解</a>
+        <a class="nav-link" href="/discovery/report/task_d71ccdda2a23">探索报告</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Internal Governance</span>
+        <h1>从一次求解，走到内部治理</h1>
+        <p class="hero-copy">这个页面是内部后台，不是普通用户入口。它负责接住一次求解之后形成的记录、反馈、草稿、审核和发布动作。</p>
+      </div>
+      <div class="hero-side">
+        <div class="hero-stat">
+          <h2>治理重点</h2>
+          <strong>先复核，再决定是否留下</strong>
+          <p>新方法进入长期能力库之前，必须经过人工审核。这个后台负责接住内部产物，并驱动保留、修补、发布与回滚。</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="stack">
+      <section class="summary-band">
+        <div class="eyebrow">Governance Snapshot</div>
+        <div class="section-copy">最近的求解记录、反馈、方法草稿、审核任务和已发布版本会统一汇总在这里。</div>
+        <div id="opsKpis" class="summary-grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">后台配置</h2>
+        <div class="layout-2col">
+          <div class="field">
+            <label for="opsDbPath">SQLite DB Path</label>
+            <input id="opsDbPath" value="phase1_runtime/state/registry.db" />
+          </div>
+          <div class="field">
+            <label for="opsAssignee">审核人</label>
+            <input id="opsAssignee" placeholder="例如：ops_reviewer" />
+          </div>
+        </div>
+        <div class="button-row" style="margin-top: 12px;">
+          <button class="btn-primary" id="opsRefreshBtn">刷新全部</button>
+          <button class="btn-secondary" id="opsApproveBtn">批准所选审核</button>
+          <button class="btn-secondary" id="opsRejectBtn">驳回所选审核</button>
+        </div>
+      </section>
+
+      <div class="layout-3col">
+        <section class="panel">
+          <h2 class="section-title">求解记录</h2>
+          <div id="workspaceRunCards" class="card-list"></div>
+        </section>
+        <section class="panel">
+          <h2 class="section-title">反馈与方法草稿</h2>
+          <div id="feedbackCards" class="card-list"></div>
+          <div id="draftCards" class="card-list" style="margin-top: 14px;"></div>
+        </section>
+        <section class="panel">
+          <h2 class="section-title">审核与已发布版本</h2>
+          <div id="reviewCards" class="card-list"></div>
+          <div id="versionCards" class="card-list" style="margin-top: 14px;"></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <h2 class="section-title">Rule Graph 与社区报告</h2>
+        <div id="ruleGraphSummary" class="summary-grid"></div>
+        <div id="ruleGraphTree" class="card-list" style="margin-top: 14px;"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">详情与沉淀视图</h2>
+        <div id="opsDetail"><div class="empty-state">点击任一卡片查看详情。</div></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="/static/app-core.js"></script>
+  <script src="/static/ui-feedback.js"></script>
+  <script src="/static/ops-renderers.js"></script>
+  <script src="/static/ops-app.js"></script>
+</body>
+</html>

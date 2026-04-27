@@ -1,0 +1,75 @@
+{
+  "case_count": 10,
+  "cases": [
+    {
+      "case_id": "workspace__fund_docx_direct_warn",
+      "path": "workspace/fund_docx_direct_warn",
+      "entry": "workspace",
+      "scenario_id": "fund_nav_warning",
+      "title": "基金预警判断：是否需要风险提示"
+    },
+    {
+      "case_id": "workspace__workspace_exploration_new_atomic",
+      "path": "workspace/workspace_exploration_new_atomic",
+      "entry": "workspace",
+      "scenario_id": "fund_nav_warning",
+      "title": "规则不足场景：启动多智能体探索"
+    },
+    {
+      "case_id": "workspace__disclosure_exploration_major_announcement",
+      "path": "workspace/disclosure_exploration_major_announcement",
+      "entry": "workspace",
+      "scenario_id": "disclosure_clarification",
+      "title": "公告披露澄清：无规则探索样本"
+    },
+    {
+      "case_id": "workspace__disclosure_exploration_guidance_revision",
+      "path": "workspace/disclosure_exploration_guidance_revision",
+      "entry": "workspace",
+      "scenario_id": "disclosure_clarification",
+      "title": "业绩预告修订：无规则探索样本"
+    },
+    {
+      "case_id": "workspace__equity_research_h3_conflict_adjudication",
+      "path": "workspace/equity_research_h3_conflict_adjudication",
+      "entry": "workspace",
+      "scenario_id": "equity_research_adjudication",
+      "title": "研报观点冲突裁决：无规则探索样本"
+    },
+    {
+      "case_id": "workspace__equity_research_h3_2025_performance",
+      "path": "workspace/equity_research_h3_2025_performance",
+      "entry": "workspace",
+      "scenario_id": "equity_research",
+      "title": "研报业绩解读：2025年工行整体表现"
+    },
+    {
+      "case_id": "workspace__equity_research_h3_risk_focus",
+      "path": "workspace/equity_research_h3_risk_focus",
+      "entry": "workspace",
+      "scenario_id": "equity_research",
+      "title": "研报风险研判：最值得关注的风险"
+    },
+    {
+      "case_id": "workspace__equity_research_h3_code_upside_calc",
+      "path": "workspace/equity_research_h3_code_upside_calc",
+      "entry": "workspace",
+      "scenario_id": "equity_research",
+      "title": "研报表格复算审计：盈利预测与估值简表"
+    },
+    {
+      "case_id": "prototype__prototype_fund_compose",
+      "path": "prototype/prototype_fund_compose",
+      "entry": "prototype",
+      "scenario_id": null,
+      "title": "prototype_fund_compose"
+    },
+    {
+      "case_id": "prototype__prototype_credit_compose",
+      "path": "prototype/prototype_credit_compose",
+      "entry": "prototype",
+      "scenario_id": null,
+      "title": "prototype_credit_compose"
+    }
+  ]
+}

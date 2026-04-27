@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "case_record.schema.json",
+  "type": "object",
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "scenario_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "question": {
+      "$ref": "question_struct.schema.json"
+    },
+    "document_bundle_id": {
+      "type": "string"
+    },
+    "gold_answer": {
+      "$ref": "gold_answer.schema.json"
+    },
+    "solution_steps": {
+      "type": "array",
+      "items": {
+        "$ref": "case_step.schema.json"
+      }
+    },
+    "linked_rule_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "review_status": {
+      "type": "string"
+    },
+    "reviewer": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "case_id",
+    "scenario_id",
+    "title",
+    "question",
+    "document_bundle_id",
+    "gold_answer",
+    "solution_steps",
+    "linked_rule_ids",
+    "review_status",
+    "reviewer",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

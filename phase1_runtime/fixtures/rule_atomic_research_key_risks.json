@@ -1,0 +1,109 @@
+{
+  "rule_id": "atomic.research_key_risks.v1",
+  "name": "Research report key downside risks extraction",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "atomic",
+  "rule_family": "equity_research",
+  "trigger": {
+    "query_signals": ["风险", "下行", "不确定", "风险提示", "担忧", "压力"],
+    "question_types": ["analysis_query"],
+    "intents": ["extract", "summarize"]
+  },
+  "applicability": {
+    "document_types": ["report"],
+    "scope": "适用于从股票研报中提取主要下行风险和不确定性因素。",
+    "non_scope": "不适用于无风险章节的简报或摘要类文档。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "key_risks",
+        "type": "string",
+        "description": "主要下行风险列表",
+        "hints": ["风险", "下行风险", "不确定", "担忧"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_key_risks",
+      "type": "extract",
+      "goal": "从研报文档中提取分析师明确列出的主要下行风险（downside risks），按研报原文列举，每条简洁描述。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "key_risks", "type": "string", "description": "主要下行风险（分条列举）"},
+          {"key": "risk_count", "type": "number", "description": "风险条数"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {
+        "must_use_evidence": true,
+        "hints": ["风险", "下行风险", "不确定性", "担忧", "风险提示", "风险因素"],
+        "chunk_top_k": 8
+      }
+    },
+    {
+      "step_id": "build_risk_answer",
+      "type": "explain",
+      "goal": "基于提取的风险列表，生成结构化风险摘要。decision字段：风险条数>=3填risks_multiple；1-2条填risks_limited；未找到风险填risks_not_found。",
+      "depends_on": ["extract_key_risks"],
+      "io": {
+        "inputs": [
+          "$step.extract_key_risks.output.key_risks",
+          "$step.extract_key_risks.output.risk_count"
+        ],
+        "outputs": [
+          {"key": "key_risks", "type": "string", "description": "主要下行风险"},
+          {"key": "risk_count", "type": "number", "description": "风险条数"},
+          {"key": "answer_text", "type": "string", "description": "完整风险摘要"},
+          {"key": "decision", "type": "string", "description": "risks_multiple / risks_limited / risks_not_found"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {
+        "must_use_evidence": true,
+        "chunk_top_k": 8
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["key_risks", "answer_text", "decision", "evidence_refs"],
+      "properties": {
+        "key_risks": {"type": "string"},
+        "risk_count": {"type": "number"},
+        "answer_text": {"type": "string"},
+        "decision": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["key_risks", "answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": [],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-04-03T00:00:00+00:00"
+    }
+  }
+}

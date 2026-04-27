@@ -1,0 +1,11 @@
+{
+  "scenario_id": "disclosure_clarification",
+  "parser_status": "parsed_txt",
+  "route_decision": "exploration",
+  "final_decision": "needs_review",
+  "decision_text": "建议先人工复核",
+  "asset_pipeline": {
+    "auto_status": "draft_promoted",
+    "recommended_action": "create_new_atomic_rule"
+  }
+}

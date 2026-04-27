@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gold_answer.schema.json",
+  "type": "object",
+  "properties": {
+    "answer_text": {
+      "type": "string"
+    },
+    "decision": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "explanation": {
+      "type": "string"
+    },
+    "evidence_snippet_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "answer_text",
+    "decision",
+    "confidence",
+    "explanation",
+    "evidence_snippet_ids"
+  ],
+  "additionalProperties": false
+}

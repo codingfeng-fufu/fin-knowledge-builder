@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>运行记录中心</title>
+  <link rel="stylesheet" href="/static/app-shell.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">D</div>
+        <div class="brand-copy">
+          <small>Datasets & Run Ledger</small>
+          <strong>运行记录中心</strong>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a class="nav-link" href="/workspace">问题求解</a>
+        <a class="nav-link" href="/demo">导演演示</a>
+        <a class="nav-link" href="/workflow">系统说明</a>
+        <a class="nav-link" href="/prototype">能力演示</a>
+        <a class="nav-link" href="/ops">内部治理</a>
+        <a class="nav-link active" href="/console">记录</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Run Ledger</span>
+        <h1>把数据集和运行过程都留下来</h1>
+        <p class="hero-copy">这个页面专门负责留存数据集、回放任务和运行记录。它不是主产品页面，而是支撑演示、离线 replay 和过程留痕的记录中心。</p>
+      </div>
+      <div class="hero-side">
+        <div class="hero-stat">
+          <h2>这里负责什么</h2>
+          <strong>数据集、运行、回放，一处留存</strong>
+          <p>这里专门管理实验数据集、回放链路、同步/异步运行任务，以及整套过程记录。</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="stack">
+      <section class="summary-band">
+        <div class="eyebrow">Snapshot</div>
+        <div id="registrySummary" class="summary-grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">记录操作</h2>
+        <div class="layout-2col">
+          <div class="field">
+            <label for="registryDbPath">SQLite DB Path</label>
+            <input id="registryDbPath" value="phase1_runtime/state/registry.db" />
+          </div>
+          <div class="field">
+            <label for="datasetDirInput">数据集目录</label>
+            <input id="datasetDirInput" value="phase1_runtime/sim_data/demo_set_001" />
+          </div>
+        </div>
+        <div class="button-row" style="margin-top: 12px;">
+          <button class="btn-primary" id="registerDatasetBtn">登记数据集</button>
+          <button class="btn-secondary" id="refreshRegistryBtn">刷新列表</button>
+        </div>
+      </section>
+
+      <div class="layout-2col">
+        <section class="panel">
+          <h2 class="section-title">数据集</h2>
+          <div id="datasetCards" class="card-list"></div>
+        </section>
+        <section class="panel">
+          <h2 class="section-title">运行记录</h2>
+          <div id="workflowCards" class="card-list"></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <h2 class="section-title">详细信息</h2>
+        <div id="registryDetail"><div class="empty-state">选择数据集或运行记录查看详情，或直接在数据集卡片上触发一次同步运行。</div></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="/static/app-core.js"></script>
+  <script>
+    const { apiRequest, byId, chip, displayStatusLabel, escapeHtml } = window.Phase1UI;
+    function dbPath() { return byId("registryDbPath").value.trim(); }
+
+    async function refreshRegistry() {
+      const [datasets, runs] = await Promise.all([
+        apiRequest("registry.dataset.list", { db_path: dbPath() }),
+        apiRequest("registry.workflow.list", { db_path: dbPath() }),
+      ]);
+
+      byId("registrySummary").innerHTML = [
+        { label: "数据集", value: datasets.dataset_count || 0 },
+        { label: "运行记录", value: runs.run_count || 0 },
+        { label: "数据库路径", value: dbPath() },
+        { label: "当前模式", value: "记录中心" },
+      ].map((item) => `<div class="summary-card"><span class="kpi-label">${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong></div>`).join("");
+
+      byId("datasetCards").innerHTML = (datasets.datasets || []).map((item) => `
+        <div class="artifact-card featured">
+          <h3>${escapeHtml(item.dataset_id)}</h3>
+          <div class="chip-row">
+            ${chip(item.scenario_name || "")}
+            ${chip(item.validation_valid ? "可用" : "不可用", item.validation_valid ? "ok" : "warn")}
+          </div>
+          <div class="section-copy">${escapeHtml(item.dataset_dir || "")}</div>
+          <div class="button-row" style="margin-top: 10px;">
+            <button class="btn-secondary" data-dataset-get="${escapeHtml(item.dataset_id)}">详情</button>
+            <button class="btn-primary" data-run-sync="${escapeHtml(item.dataset_id)}">同步运行</button>
+          </div>
+        </div>
+      `).join("") || `<div class="empty-state">暂无数据集。</div>`;
+
+      byId("workflowCards").innerHTML = (runs.runs || []).map((item) => `
+        <button class="artifact-card olive" data-run-get="${escapeHtml(item.run_id)}">
+          <h3>${escapeHtml(item.run_id)}</h3>
+          <div class="chip-row">
+            ${chip(displayStatusLabel(item.status))}
+            ${item.final_decision ? chip(item.decision_text || item.final_decision, "gold") : ""}
+          </div>
+          <div class="section-copy">${escapeHtml(item.dataset_id || "")}</div>
+        </button>
+      `).join("") || `<div class="empty-state">暂无运行记录。</div>`;
+
+      document.querySelectorAll("[data-dataset-get]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const detail = await apiRequest("registry.dataset.get", { db_path: dbPath(), dataset_id: button.dataset.datasetGet });
+          byId("registryDetail").innerHTML = `<div class="artifact-card"><h3>数据集详情</h3><div class="section-copy">${escapeHtml(detail.dataset_dir || "")}</div></div>`;
+        });
+      });
+      document.querySelectorAll("[data-run-sync]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const detail = await apiRequest("registry.workflow.run_sync", {
+            db_path: dbPath(),
+            dataset_id: button.dataset.runSync,
+            request_id: `ui_${Date.now()}`,
+          });
+          byId("registryDetail").innerHTML = `<div class="artifact-card"><h3>同步运行结果</h3><div class="section-copy">运行编号：${escapeHtml(detail.run_id || "-")}</div></div>`;
+          refreshRegistry();
+        });
+      });
+      document.querySelectorAll("[data-run-get]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const detail = await apiRequest("registry.workflow.get", { db_path: dbPath(), run_id: button.dataset.runGet });
+          byId("registryDetail").innerHTML = `<div class="artifact-card"><h3>运行详情</h3><div class="section-copy">状态：${escapeHtml(displayStatusLabel(detail.status))}</div><div class="section-copy" style="margin-top:8px;">数据集：${escapeHtml(detail.dataset_id || "-")}</div></div>`;
+        });
+      });
+    }
+
+    byId("registerDatasetBtn").addEventListener("click", async () => {
+      const detail = await apiRequest("registry.dataset.register", {
+        db_path: dbPath(),
+        dataset_dir: byId("datasetDirInput").value.trim(),
+      });
+      byId("registryDetail").innerHTML = `<div class="artifact-card"><h3>数据集登记完成</h3><div class="section-copy">${escapeHtml(detail.dataset_id || "-")}</div></div>`;
+      refreshRegistry();
+    });
+    byId("refreshRegistryBtn").addEventListener("click", refreshRegistry);
+
+    refreshRegistry().catch((error) => {
+      byId("registryDetail").innerHTML = `<div class="empty-state">${escapeHtml(error.message || String(error))}</div>`;
+    });
+  </script>
+</body>
+</html>

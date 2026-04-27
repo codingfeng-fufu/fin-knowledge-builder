@@ -1,0 +1,219 @@
+{
+  "rule_id": "private_fund.nav_risk_warning.v1",
+  "name": "Private fund NAV threshold risk warning",
+  "status": "published",
+  "version": "v1",
+  "trigger": {
+    "query_signals": ["净值", "跌破", "风险提示", "投资者"],
+    "question_types": ["policy_check"],
+    "intents": ["compare", "judge"]
+  },
+  "applicability": {
+    "document_types": ["contract", "policy"],
+    "scope": "适用于私募产品净值跌破合同阈值后是否需要向投资者提示风险的判断。",
+    "non_scope": "不适用于需要额外监管规则解释或缺少合同阈值证据的场景。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "current_nav",
+        "type": "number",
+        "description": "Current fund NAV.",
+        "hints": ["净值", "NAV", "单位净值", "最新净值"]
+      },
+      {
+        "key": "warning_threshold",
+        "type": "number",
+        "description": "Contractual warning threshold.",
+        "hints": ["阈值", "警戒线", "低于", "跌破", "预警线"]
+      },
+      {
+        "key": "contract_requires_warning",
+        "type": "boolean",
+        "description": "Whether the contract mandates a warning.",
+        "hints": ["风险提示", "合同约定", "应向投资者", "提示风险", "应及时"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_current_nav",
+      "type": "extract",
+      "goal": "从文档中找到基金当前单位净值（数��）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "current_nav", "type": "number", "description": "Current fund NAV."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {"must_use_evidence": true}
+    },
+    {
+      "step_id": "extract_warning_threshold",
+      "type": "extract",
+      "goal": "从文档中找到净值预警阈值/警戒线（数字）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "warning_threshold", "type": "number", "description": "Contractual warning threshold."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {"must_use_evidence": true}
+    },
+    {
+      "step_id": "extract_contract_requires_warning",
+      "type": "extract",
+      "goal": "从文档中判断合同是否约定了净值跌破阈值后须向投资者提示风险（布尔值）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "contract_requires_warning", "type": "boolean", "description": "Whether contract requires warning."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {"must_use_evidence": true}
+    },
+    {
+      "step_id": "check_threshold_breach",
+      "type": "judge",
+      "goal": "Determine whether the current NAV has fallen below the warning threshold.",
+      "depends_on": ["extract_current_nav", "extract_warning_threshold"],
+      "io": {
+        "inputs": [
+          "$step.extract_current_nav.output.current_nav",
+          "$step.extract_warning_threshold.output.warning_threshold"
+        ],
+        "outputs": [
+          {"key": "threshold_breached", "type": "boolean", "description": "Whether threshold is breached."},
+          {"key": "left_value", "type": "number", "description": "Observed NAV."},
+          {"key": "right_value", "type": "number", "description": "Configured threshold."},
+          {"key": "operator", "type": "string", "description": "Comparison operator."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "compare_numeric",
+        "allowed_tools": ["compare_numeric"],
+        "config": {
+          "left_key": "current_nav",
+          "right_key": "warning_threshold",
+          "operator": "<",
+          "result_key": "threshold_breached",
+          "evidence_snippet_ids": ["snippet_nav_table", "snippet_contract_threshold"]
+        }
+      },
+      "constraints": {"must_use_evidence": true}
+    },
+    {
+      "step_id": "check_warning_requirement",
+      "type": "judge",
+      "goal": "Determine whether the contractual warning obligation is triggered.",
+      "depends_on": ["check_threshold_breach", "extract_contract_requires_warning"],
+      "io": {
+        "inputs": [
+          "$step.check_threshold_breach.output.threshold_breached",
+          "$step.extract_contract_requires_warning.output.contract_requires_warning"
+        ],
+        "outputs": [
+          {"key": "warning_required", "type": "boolean", "description": "Whether warning is required."},
+          {"key": "checked_inputs", "type": "object", "description": "Inputs evaluated."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "boolean_gate",
+        "allowed_tools": ["boolean_gate"],
+        "config": {
+          "input_keys": ["threshold_breached", "contract_requires_warning"],
+          "mode": "all_true",
+          "result_key": "warning_required",
+          "evidence_snippet_ids": ["snippet_contract_threshold", "snippet_nav_table"]
+        }
+      },
+      "constraints": {"must_use_evidence": true}
+    },
+    {
+      "step_id": "build_final_answer",
+      "type": "explain",
+      "goal": "Build the final answer payload for the user.",
+      "depends_on": ["check_warning_requirement", "extract_contract_requires_warning"],
+      "io": {
+        "inputs": [
+          "$step.check_threshold_breach.output.threshold_breached",
+          "$step.check_warning_requirement.output.warning_required",
+          "$step.extract_contract_requires_warning.output.contract_requires_warning"
+        ],
+        "outputs": [
+          {"key": "answer_text", "type": "string", "description": "Human-readable answer."},
+          {"key": "decision", "type": "string", "description": "Machine-readable decision code."},
+          {"key": "threshold_breached", "type": "boolean", "description": "Whether threshold breached."},
+          {"key": "warning_required", "type": "boolean", "description": "Whether warning required."},
+          {"key": "explanation", "type": "string", "description": "Explanation."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "build_policy_answer",
+        "allowed_tools": ["build_policy_answer"],
+        "config": {
+          "decision_input_key": "warning_required",
+          "threshold_input_key": "threshold_breached",
+          "positive_text": "需要做风险提示，因为净值已经跌破合同阈值，且合同明确要求触发后向投资者提示风险。",
+          "negative_text": "当前不能直接认定需要提示风险，还需补充确认阈值是否触发或合同义务是否成立。",
+          "positive_decision": "must_warn",
+          "negative_decision": "needs_review",
+          "evidence_snippet_ids": ["snippet_contract_threshold", "snippet_nav_table"]
+        }
+      },
+      "constraints": {"must_use_evidence": true}
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["answer_text", "decision", "threshold_breached", "warning_required", "explanation", "evidence_refs"],
+      "properties": {
+        "answer_text": {"type": "string"},
+        "decision": {"type": "string"},
+        "threshold_breached": {"type": "boolean"},
+        "warning_required": {"type": "boolean"},
+        "explanation": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {"validator_id": "schema.validate", "target": "step:check_threshold_breach", "severity": "error"},
+    {"validator_id": "schema.validate", "target": "step:check_warning_requirement", "severity": "error"},
+    {"validator_id": "schema.validate", "target": "step:build_final_answer", "severity": "error"},
+    {"validator_id": "schema.validate", "target": "final", "severity": "error"},
+    {"validator_id": "evidence.required", "target": "final", "severity": "error"},
+    {
+      "validator_id": "must_include",
+      "target": "final",
+      "severity": "error",
+      "params": {"fields": ["answer_text", "decision", "evidence_refs"]}
+    }
+  ],
+  "provenance": {
+    "source_cases": ["case_private_fund_nav_warning_001"],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "demo_reviewer",
+      "reviewed_at": "2026-03-23T00:00:00Z"
+    }
+  }
+}

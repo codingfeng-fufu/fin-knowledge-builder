@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "question_struct.schema.json",
+  "type": "object",
+  "properties": {
+    "question_text": {
+      "type": "string"
+    },
+    "question_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "intents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "document_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extracted_inputs": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "question_text",
+    "question_types",
+    "intents",
+    "document_types"
+  ],
+  "additionalProperties": false
+}

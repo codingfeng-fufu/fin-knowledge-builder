@@ -1,0 +1,26 @@
+{
+  "facts": {
+    "days_to_maturity": 20,
+    "notice_threshold_days": 30,
+    "contract_requires_notice": true
+  },
+  "evidence_refs": [
+    {
+      "doc_id": "loan_contract_001",
+      "locator": {
+        "section": "9.2 展期通知"
+      },
+      "snippet_id": "snippet_notice_clause",
+      "text": "借款到期前30天内，贷款人应通知借款人办理展期或续贷手续。"
+    },
+    {
+      "doc_id": "loan_schedule_2026_001",
+      "locator": {
+        "page": 1,
+        "section": "还款计划"
+      },
+      "snippet_id": "snippet_maturity_schedule",
+      "text": "当前贷款距离到期日还有20天。"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "entry": "workspace",
+  "question_text": "该基金当前是否需要向投资者做风险提示？",
+  "scenario_id": "fund_nav_warning",
+  "materials": [
+    {
+      "name": "contract_clause.html",
+      "path": "materials/contract_clause.html"
+    },
+    {
+      "name": "nav_report.xlsx",
+      "path": "materials/nav_report.xlsx"
+    }
+  ]
+}

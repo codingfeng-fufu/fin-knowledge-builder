@@ -1,0 +1,145 @@
+{
+  "rule_id": "atomic.contractual_warning_gate.v1",
+  "name": "Atomic contractual warning gate",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "atomic",
+  "rule_family": "private_fund_nav_warning",
+  "trigger": {
+    "query_signals": ["净值", "跌破", "风险提示", "投资者"],
+    "question_types": ["policy_check"],
+    "intents": ["compare", "judge"]
+  },
+  "applicability": {
+    "document_types": ["contract", "policy"],
+    "scope": "适用于判断合同义务是否被触发。",
+    "non_scope": "不负责最终用户答案生成。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "threshold_breached",
+        "type": "boolean",
+        "description": "Whether the NAV threshold has been breached (from prior step).",
+        "hints": ["净值", "跌破", "阈值"]
+      },
+      {
+        "key": "contract_requires_warning",
+        "type": "boolean",
+        "description": "Whether the contract mandates a warning when threshold is breached.",
+        "hints": ["风险提示", "合同约定", "应向投资者", "提示风险", "应及时"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_contract_requires_warning",
+      "type": "extract",
+      "goal": "从文档中判断合同是否约定了净值跌破阈值后须向投资者提示风险（布尔值）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {
+            "key": "contract_requires_warning",
+            "type": "boolean",
+            "description": "Whether contract requires warning when threshold is breached."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers for the contract clause."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "llm",
+        "allowed_tools": []
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    },
+    {
+      "step_id": "atomic_check_warning_requirement",
+      "type": "judge",
+      "goal": "Determine whether the contractual warning obligation is triggered.",
+      "depends_on": ["extract_contract_requires_warning"],
+      "io": {
+        "inputs": [
+          "$input.threshold_breached",
+          "$step.extract_contract_requires_warning.output.contract_requires_warning"
+        ],
+        "outputs": [
+          {
+            "key": "warning_required",
+            "type": "boolean",
+            "description": "Whether a warning must be issued."
+          },
+          {
+            "key": "checked_inputs",
+            "type": "object",
+            "description": "Inputs evaluated by the gate."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "boolean_gate",
+        "allowed_tools": ["boolean_gate"],
+        "config": {
+          "input_keys": ["threshold_breached", "contract_requires_warning"],
+          "mode": "all_true",
+          "result_key": "warning_required",
+          "evidence_snippet_ids": ["snippet_contract_threshold", "snippet_nav_table"]
+        }
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["warning_required", "checked_inputs", "evidence_refs"],
+      "properties": {
+        "warning_required": {"type": "boolean"},
+        "checked_inputs": {"type": "object"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["warning_required", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "step:atomic_check_warning_requirement",
+      "severity": "error"
+    },
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": ["case_private_fund_nav_warning_001"],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-03-24T00:00:00+00:00"
+    }
+  }
+}

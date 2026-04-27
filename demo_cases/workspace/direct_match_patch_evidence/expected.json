@@ -1,0 +1,12 @@
+{
+  "scenario_id": "fund_nav_warning",
+  "parser_status": "parsed_complete",
+  "route_decision": "direct_match",
+  "final_decision": "must_warn",
+  "decision_text": "需要进行风险提示",
+  "manual_followup": {
+    "feedback_type": "insufficient_evidence",
+    "recommended_action": "patch_evidence_pattern",
+    "patch_type": "evidence_pattern"
+  }
+}

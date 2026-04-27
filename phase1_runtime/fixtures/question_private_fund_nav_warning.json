@@ -1,0 +1,7 @@
+{
+  "question_text": "某私募产品净值跌破0.80后，是否需要向投资者做风险提示？",
+  "question_types": ["policy_check"],
+  "intents": ["compare", "judge"],
+  "document_types": ["contract", "policy"],
+  "extracted_inputs": {}
+}

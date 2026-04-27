@@ -1,0 +1,87 @@
+{
+  "rule_id": "equity_research.target_price_view.v1",
+  "name": "Equity research target price and valuation summary",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "composite",
+  "rule_family": "equity_research",
+  "trigger": {
+    "query_signals": ["目标价", "估值", "PB", "PE", "上涨空间", "空间", "价格"],
+    "question_types": ["analysis_query"],
+    "intents": ["extract", "summarize"]
+  },
+  "applicability": {
+    "document_types": ["report"],
+    "scope": "适用于回答研报中的目标价、估值方法和上涨空间。",
+    "non_scope": "不适用于仅询问评级或风险的场景。"
+  },
+  "inputs": {
+    "required": [],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "build_target_price_answer",
+      "type": "explain",
+      "goal": "基于研报文档直接输出目标价、估值依据和上涨空间摘要。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "target_price", "type": "number", "description": "目标价（元）；未明确时返回 -1"},
+          {"key": "valuation_method", "type": "string", "description": "估值方法"},
+          {"key": "valuation_multiple", "type": "string", "description": "估值倍数或依据"},
+          {"key": "upside_description", "type": "string", "description": "上涨空间描述"},
+          {"key": "answer_text", "type": "string", "description": "完整估值分析摘要"},
+          {"key": "decision", "type": "string", "description": "upside_moderate / needs_review"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "build_research_target_price_answer",
+        "allowed_tools": ["build_research_target_price_answer"]
+      },
+      "constraints": {
+        "must_use_evidence": true,
+        "chunk_top_k": 8
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["target_price", "valuation_method", "valuation_multiple", "upside_description", "answer_text", "decision", "evidence_refs"],
+      "properties": {
+        "target_price": {"type": "number"},
+        "valuation_method": {"type": "string"},
+        "valuation_multiple": {"type": "string"},
+        "upside_description": {"type": "string"},
+        "answer_text": {"type": "string"},
+        "decision": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["target_price", "answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": [],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-04-08T00:00:00+00:00"
+    }
+  }
+}

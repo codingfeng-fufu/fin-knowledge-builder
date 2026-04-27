@@ -1,0 +1,39 @@
+{
+  "name": "claude-style-pdf-reader",
+  "version": "0.1.0",
+  "description": "Claude-style PDF reading plugin with Kimi-backed page batching and summarization.",
+  "author": {
+    "name": "Local Workspace"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "pdf",
+    "kimi",
+    "research-paper",
+    "summarization"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Claude-Style PDF Reader",
+    "shortDescription": "Read PDFs with Claude-style page routing and Kimi analysis.",
+    "longDescription": "A repo-local plugin that imitates Claude Code's PDF routing behavior. Short PDFs can be read whole, long PDFs are routed to explicit page ranges or automatic page batching, and Kimi is used as the analysis backend.",
+    "developerName": "Local Workspace",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Read this PDF the Claude-style way and summarize it.",
+      "Analyze pages 1-3 of this PDF with Kimi.",
+      "Split this long PDF into batches and summarize the full paper."
+    ],
+    "brandColor": "#0B5FFF",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
+    "screenshots": [
+      "./assets/screenshot1.png",
+      "./assets/screenshot2.png"
+    ]
+  }
+}

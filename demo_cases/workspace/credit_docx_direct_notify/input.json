@@ -1,0 +1,15 @@
+{
+  "entry": "workspace",
+  "question_text": "贷款当前是否需要通知借款人办理展期手续？",
+  "scenario_id": "credit_notice",
+  "materials": [
+    {
+      "name": "notice_clause.docx",
+      "path": "materials/notice_clause.docx"
+    },
+    {
+      "name": "maturity_schedule.docx",
+      "path": "materials/maturity_schedule.docx"
+    }
+  ]
+}

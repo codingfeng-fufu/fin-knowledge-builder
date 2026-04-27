@@ -1,0 +1,155 @@
+{
+  "rule_id": "atomic.notice_answer_builder.v1",
+  "name": "Atomic notice answer builder",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "atomic",
+  "rule_family": "credit_loan_extension_notice",
+  "trigger": {
+    "query_signals": ["展期", "续贷", "通知", "到期", "借款人"],
+    "question_types": ["policy_check"],
+    "intents": ["compare", "judge"]
+  },
+  "applicability": {
+    "document_types": ["contract", "policy"],
+    "scope": "适用于基于上游判断结果构造通知结论。",
+    "non_scope": "不负责单独做窗口或义务判断。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "notice_window_open",
+        "type": "boolean",
+        "description": "Whether within notice window (from prior step).",
+        "hints": ["到期", "天", "通知"]
+      },
+      {
+        "key": "notice_required",
+        "type": "boolean",
+        "description": "Whether notice is required (from prior step).",
+        "hints": ["通知", "借款人"]
+      },
+      {
+        "key": "contract_requires_notice",
+        "type": "boolean",
+        "description": "Whether contract requires notice.",
+        "hints": ["通知", "应通知", "合同约定", "借款人", "展期手续"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_contract_requires_notice",
+      "type": "extract",
+      "goal": "从文档中判断合同是否约定须通知借款人办理展期手续（布尔值）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {
+            "key": "contract_requires_notice",
+            "type": "boolean",
+            "description": "Whether contract requires borrower notification."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "llm",
+        "allowed_tools": []
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    },
+    {
+      "step_id": "atomic_build_final_notice_answer",
+      "type": "explain",
+      "goal": "Build the final answer payload for the borrower-notice decision.",
+      "depends_on": ["extract_contract_requires_notice"],
+      "io": {
+        "inputs": [
+          "$input.notice_window_open",
+          "$input.notice_required",
+          "$step.extract_contract_requires_notice.output.contract_requires_notice"
+        ],
+        "outputs": [
+          {"key": "answer_text", "type": "string", "description": "Human-readable answer."},
+          {"key": "decision", "type": "string", "description": "Machine-readable decision code."},
+          {"key": "notice_window_open", "type": "boolean", "description": "Whether within notice window."},
+          {"key": "notice_required", "type": "boolean", "description": "Whether notice required."},
+          {"key": "explanation", "type": "string", "description": "Step-by-step explanation."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "build_notice_answer",
+        "allowed_tools": ["build_notice_answer"],
+        "config": {
+          "decision_input_key": "notice_required",
+          "window_input_key": "notice_window_open",
+          "positive_text": "需要发送展期通知，因为已进入合同约定的通知窗口，且合同明确要求通知借款人办理展期手续。",
+          "negative_text": "当前不需要发送展期通知，因为尚未进入通知窗口或合同未要求通知借款人办理展期手续。",
+          "positive_decision": "must_notify",
+          "negative_decision": "no_notice_required",
+          "evidence_snippet_ids": ["snippet_notice_clause", "snippet_maturity_schedule"]
+        }
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["answer_text", "decision", "notice_window_open", "notice_required", "explanation", "evidence_refs"],
+      "properties": {
+        "answer_text": {"type": "string"},
+        "decision": {"type": "string"},
+        "notice_window_open": {"type": "boolean"},
+        "notice_required": {"type": "boolean"},
+        "explanation": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "step:atomic_build_final_notice_answer",
+      "severity": "error"
+    },
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "must_include",
+      "target": "final",
+      "severity": "error",
+      "params": {"fields": ["answer_text", "decision", "evidence_refs"]}
+    }
+  ],
+  "provenance": {
+    "source_cases": ["case_credit_loan_extension_notice_001"],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-03-25T00:00:00+00:00"
+    }
+  }
+}

@@ -1,0 +1,144 @@
+# Default: keep the repository focused on the runnable system.
+# Everything is ignored first, then selected source/documentation paths are allowed.
+*
+!*/
+!.gitignore
+
+# Root-level project metadata that belongs with the system.
+!WORKSPACE_MAP.md
+
+# Core system source.
+!muti_agent_exploration/**
+!phase1_runtime/**
+!demo_cases/**
+!docs/**
+!plugins/claude-style-pdf-reader/**
+
+# Lightweight developer/test helpers for the system.
+!tools/
+!tools/test_kimi.py
+!tools/test_showcase_sample_stability.py
+
+# Keep examples, never secrets.
+!**/.env.example
+
+# Nested repositories and VCS metadata.
+**/.git/
+**/.svn/
+**/.hg/
+.nested_git_backups/
+
+# Local environment and secrets.
+.env
+.env.*
+!.env.example
+config.json
+**/config.local.json
+**/*secret*
+**/*token*
+**/*api_key*
+
+# Python caches, virtual environments, and test output.
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+.venv/
+venv/
+env/
+**/.venv/
+
+# Node/Vite dependencies and build output.
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+.vite/
+**/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime logs, process files, uploads, and databases.
+runtime/
+logs/
+**/logs/
+uploads/
+**/uploads/
+*.log
+*.pid
+*.db
+*.sqlite
+*.sqlite3
+
+# Large/generated runtime assets.
+phase1_runtime/local_models/
+phase1_runtime/sim_data/
+phase1_runtime/consumption_traces/
+phase1_runtime/traces/
+phase1_runtime/state/
+phase1_runtime/prototype_runs/
+phase1_runtime/product_runs/
+phase1_runtime/tmp_research_trace/
+phase1_runtime/registry.db
+phase1_runtime/server.log
+
+# Generated demo outputs, not source cases.
+demo_cases/*.workspace_response.json
+demo_cases/*.plugin_response.json
+demo_cases/image.png
+
+# Competition/submission materials, generated decks, screenshots, and archives.
+需要提交的材料/
+contest/
+*.pptx
+*.ppt
+*.pdf
+*.docx
+*.doc
+*.xlsx
+*.xls
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# Curated demo fixtures are part of the system, even when they are PDF/DOCX/XLSX.
+!demo_cases/**/*.json
+!demo_cases/**/*.md
+!demo_cases/**/*.txt
+!demo_cases/**/*.html
+!demo_cases/**/*.pdf
+!demo_cases/**/*.docx
+!demo_cases/**/*.xlsx
+!demo_cases/**/*.png
+
+# Keep generated demo responses out.
+demo_cases/*.workspace_response.json
+demo_cases/*.plugin_response.json
+demo_cases/image.png
+
+# Local automation/capture artifacts.
+.claude/
+.playwright-mcp/
+.DS_Store
+Thumbs.db
+
+# Non-system experiments and extracted third-party/reference projects.
+extracted-coding-agent/
+mini_coding_agent/
+reconstructions/
+custom_skills/
+core
+ai_contest_pitch_v1.pptx

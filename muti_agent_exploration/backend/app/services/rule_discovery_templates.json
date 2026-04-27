@@ -1,0 +1,96 @@
+{
+  "default_template": "generic_control",
+  "templates": {
+    "ai_external_communication": {
+      "title": "AI外发内容审核规则",
+      "description": "适用于 AI 生成或辅助生成的拟对外发送文本。",
+      "match_all": ["ai_generated", "external_communication"],
+      "match_any": [],
+      "required_controls": [
+        "完成人工复核",
+        "核实涉及事实、时间、范围和承诺的内容"
+      ],
+      "required_review_roles": [
+        "发送责任人",
+        "业务负责人"
+      ],
+      "required_confirmation_targets": [
+        "合作范围",
+        "交付时间",
+        "承诺措辞"
+      ]
+    },
+    "ambiguous_disclosure": {
+      "title": "对外披露澄清规则",
+      "description": "适用于表述模糊、可能引发误解的披露或说明场景。",
+      "match_all": ["external_communication", "misleading_expression"],
+      "match_any": [],
+      "required_controls": [
+        "修正可能造成误解的表述"
+      ],
+      "required_review_roles": [
+        "业务负责人"
+      ],
+      "required_confirmation_targets": [
+        "表述准确性"
+      ]
+    },
+    "data_external_sharing": {
+      "title": "外发数据审查规则",
+      "description": "适用于包含数据、隐私或敏感信息的外部共享场景。",
+      "match_all": ["external_communication", "sensitive_data"],
+      "match_any": [],
+      "required_controls": [
+        "确认数据共享范围",
+        "核验外发授权与脱敏状态"
+      ],
+      "required_review_roles": [
+        "业务负责人",
+        "数据或合规责任人"
+      ],
+      "required_confirmation_targets": [
+        "数据授权范围",
+        "脱敏状态"
+      ]
+    },
+    "external_commitment_review": {
+      "title": "对外承诺审核规则",
+      "description": "适用于涉及对外承诺、交付时间、合作结论确认的外部沟通场景。",
+      "match_all": ["external_communication", "unverified_commitment"],
+      "match_any": [],
+      "required_controls": [
+        "核实涉及事实、时间、范围和承诺的内容"
+      ],
+      "required_review_roles": [
+        "业务负责人"
+      ],
+      "required_confirmation_targets": [
+        "合作范围",
+        "交付时间",
+        "承诺措辞"
+      ]
+    },
+    "human_review_gate": {
+      "title": "人工复核门槛规则",
+      "description": "适用于自动生成、高风险或责任不清的内容在执行前必须经过人工复核的场景。",
+      "match_all": [],
+      "match_any": ["ai_generated", "misleading_expression", "unverified_commitment"],
+      "required_controls": [
+        "完成人工复核"
+      ],
+      "required_review_roles": [
+        "业务负责人"
+      ],
+      "required_confirmation_targets": []
+    },
+    "generic_control": {
+      "title": "风险控制规则",
+      "description": "适用于无法归入具体模板时的一般性治理约束。",
+      "match_all": [],
+      "match_any": [],
+      "required_controls": [],
+      "required_review_roles": [],
+      "required_confirmation_targets": []
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "scenario_id": "equity_research",
+  "route_decision": "direct_match",
+  "final_decision": "rating_bullish",
+  "decision_text": "研报观点偏积极"
+}

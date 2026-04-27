@@ -1,0 +1,11 @@
+{
+  "entry": "workspace",
+  "question_text": "当前是否需要发送借款人通知？",
+  "scenario_id": "credit_notice",
+  "materials": [
+    {
+      "name": "repayment_schedule.xlsx",
+      "path": "materials/repayment_schedule.xlsx"
+    }
+  ]
+}

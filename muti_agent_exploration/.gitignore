@@ -1,0 +1,27 @@
+# Node
+node_modules/
+frontend/node_modules/
+
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Build outputs
+frontend/dist/
+
+# Environment
+.env
+
+# Logs and local runtime data
+backend/logs/
+backend/app/uploads/
+backend/uploads/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

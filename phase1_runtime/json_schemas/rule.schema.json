@@ -1,0 +1,330 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rule.schema.json",
+  "type": "object",
+  "properties": {
+    "rule_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "candidate",
+        "published",
+        "deprecated"
+      ]
+    },
+    "version": {
+      "type": "string"
+    },
+    "rule_kind": {
+      "type": "string",
+      "enum": [
+        "atomic",
+        "composite"
+      ]
+    },
+    "rule_family": {
+      "type": "string"
+    },
+    "composition": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "pattern": {
+          "type": "string"
+        },
+        "source_rule_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "binding_schema": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "pattern",
+        "source_rule_ids",
+        "binding_schema"
+      ],
+      "additionalProperties": false
+    },
+    "trigger": {
+      "type": "object",
+      "properties": {
+        "query_signals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "question_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "intents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "query_signals",
+        "question_types",
+        "intents"
+      ],
+      "additionalProperties": false
+    },
+    "applicability": {
+      "type": "object",
+      "properties": {
+        "document_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scope": {
+          "type": "string"
+        },
+        "non_scope": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_types",
+        "scope",
+        "non_scope"
+      ],
+      "additionalProperties": false
+    },
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "$ref": "input_field.schema.json"
+          }
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "$ref": "input_field.schema.json"
+          }
+        }
+      },
+      "required": [
+        "required",
+        "optional"
+      ],
+      "additionalProperties": false
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "goal": {
+            "type": "string"
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "io": {
+            "type": "object",
+            "properties": {
+              "inputs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "outputs": {
+                "type": "array",
+                "items": {
+                  "$ref": "output_field.schema.json"
+                }
+              }
+            },
+            "required": [
+              "inputs",
+              "outputs"
+            ],
+            "additionalProperties": false
+          },
+          "executor": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "tool",
+                  "llm"
+                ]
+              },
+              "tool": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "template_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "allowed_tools": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "config": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "mode",
+              "allowed_tools",
+              "config"
+            ],
+            "additionalProperties": false
+          },
+          "constraints": {
+            "type": "object",
+            "properties": {
+              "must_use_evidence": {
+                "type": "boolean"
+              },
+              "max_tokens": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "must_use_evidence"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "step_id",
+          "type",
+          "goal",
+          "depends_on",
+          "io",
+          "executor",
+          "constraints"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "answer_schema": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "must_include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "answer_schema",
+        "must_include"
+      ],
+      "additionalProperties": false
+    },
+    "validators": {
+      "type": "array",
+      "items": {
+        "$ref": "validator_ref.schema.json"
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "source_cases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "review": {
+          "type": "object",
+          "properties": {
+            "review_status": {
+              "type": "string",
+              "enum": [
+                "unreviewed",
+                "approved",
+                "rejected"
+              ]
+            },
+            "reviewer": {
+              "type": "string"
+            },
+            "reviewed_at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "review_status",
+            "reviewer",
+            "reviewed_at"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "source_cases",
+        "review"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "rule_id",
+    "name",
+    "status",
+    "version",
+    "trigger",
+    "applicability",
+    "inputs",
+    "steps",
+    "outputs",
+    "validators",
+    "provenance"
+  ],
+  "additionalProperties": false
+}

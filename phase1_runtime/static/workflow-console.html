@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>系统说明</title>
+  <link rel="stylesheet" href="/static/app-shell.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">W</div>
+        <div class="brand-copy">
+          <small>How The System Reached This Answer</small>
+          <strong>系统说明</strong>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a class="nav-link" href="/">系统首页</a>
+        <a class="nav-link" href="/workspace">问题求解</a>
+        <a class="nav-link" href="/discovery/report/task_d71ccdda2a23">探索报告</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">System Explanation</span>
+        <h1>这次答案是怎么形成的</h1>
+        <p class="hero-copy">
+          这个页面不是主产品入口，而是说明页。它会优先读取最近一次 `/workspace` 的结果，把“已有规则复用链”和“规则不足时的多智能体探索增长链”拆开显示，帮助你解释系统为什么会给出当前结果。
+        </p>
+        <div class="button-row" style="margin-top: 16px;">
+          <a class="nav-link active" href="/workspace">回答与依据</a>
+          <a class="nav-link" href="/workflow">系统说明</a>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="hero-stat">
+          <h2>说明重点</h2>
+          <strong>规则复用 / 多智能体探索</strong>
+          <p>有现成规则时优先复用；没有稳定规则时，系统会启动多智能体探索，把当前问题继续长成候选规则与后续治理动作。</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="stack">
+      <section class="summary-band">
+        <div class="eyebrow">Snapshot</div>
+        <div id="snapshotSummary" class="summary-grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">最近一次求解快照</h2>
+        <p class="section-copy">默认读取最近一次 `/workspace` 响应。如果没有最近结果，请先去 Workspace 页运行一次。</p>
+        <div id="snapshotNarrative" class="section-copy">这里展示这次问题目前走到哪一步：是复用了已有规则，还是已经进入多智能体探索与规则生长流程。</div>
+      </section>
+
+      <div class="layout-2col">
+        <section class="panel">
+          <span class="eyebrow">Reuse Engine</span>
+          <h2 class="section-title">已有规则时怎么复用</h2>
+          <div id="commonFlow" class="flow-lane"></div>
+        </section>
+
+        <section class="panel">
+          <span class="eyebrow">Growth Engine</span>
+          <h2 class="section-title">多智能体探索时怎么长新规则</h2>
+          <div id="specialFlow" class="flow-lane"></div>
+        </section>
+      </div>
+
+      <div class="layout-3col">
+        <section class="panel">
+          <h2 class="section-title">问题上下文</h2>
+          <div id="workflowContext"></div>
+        </section>
+        <section class="panel">
+          <h2 class="section-title">方法匹配与草稿</h2>
+          <div id="workflowRuleSkill"></div>
+        </section>
+        <section class="panel">
+          <h2 class="section-title">求解过程</h2>
+          <div id="workflowAgent"></div>
+        </section>
+      </div>
+    </div>
+</div>
+
+  <script src="/static/app-core.js"></script>
+  <script src="/static/ui-feedback.js"></script>
+  <script>
+    const { byId, chip, displayAnswerSource, displayRouteLabel, escapeHtml, loadWorkspaceSnapshot } = window.Phase1UI;
+
+    function renderSummary(payload) {
+      if (!payload) {
+        byId("snapshotSummary").innerHTML = `<div class="empty-state">暂无最近的 workspace 结果。</div>`;
+        return;
+      }
+      byId("snapshotSummary").innerHTML = [
+        { label: "问题场景", value: payload.scenario_title || payload.scenario_id || "-" },
+        { label: "当前处理方式", value: displayRouteLabel(payload.route_decision, payload.route_title) || "-" },
+        { label: "结果来源", value: displayAnswerSource(payload.answer_engine) || "-" },
+        { label: "当前结论", value: payload.display_decision_text || payload.decision_text || payload.final_decision || "-" },
+      ].map((item) => `
+        <div class="summary-card">
+          <span class="kpi-label">${escapeHtml(item.label)}</span>
+          <strong>${escapeHtml(item.value)}</strong>
+        </div>
+      `).join("");
+      byId("snapshotNarrative").textContent = payload.route_decision === "exploration"
+        ? "最近一次运行没有稳定规则可直接复用，系统已经把问题送入多智能体探索、候选规则生成与后续审核链。"
+        : "最近一次运行已经优先复用了已有规则或规则组合链，当前页面重点展示复用路径是怎样成立的。";
+    }
+
+    function flowStep(index, title, copy, type = "") {
+      return `
+        <div class="flow-step ${type}" data-index="${index}">
+          <h3>${escapeHtml(title)}</h3>
+          <div class="section-copy">${escapeHtml(copy)}</div>
+        </div>
+      `;
+    }
+
+    function renderCommon(payload) {
+      byId("commonFlow").innerHTML = [
+        flowStep(1, "理解文档", "系统先读取文档，并按当前问题挑出更相关的内容"),
+        flowStep(2, "组织上下文", "把证据、候选事实和问题上下文整理成当前可用的求解视图"),
+        flowStep(3, "复用已有规则", `当前处理方式：${displayRouteLabel(payload?.route_decision, payload?.route_title) || "-"}`),
+        flowStep(4, "生成运行期方法草稿", payload?.runtime_skill_artifact ? "已形成本次可执行的方法草稿" : "等待命中更合适的规则或组合链"),
+        flowStep(5, "完成当前求解", payload?.answer_engine === "super_agent" ? "当前已生成最终答案" : "当前仍由基础规则执行链给出答案"),
+        flowStep(6, "留下复用入口", "把本次运行、证据和沉淀入口统一留下来，为下一次复用做准备"),
+      ].join("");
+    }
+
+    function renderSpecial() {
+      byId("specialFlow").innerHTML = [
+        flowStep("A", "规则不足", "当系统找不到稳定规则，或者组合链无法稳定完成时，就会进入增长分支", "special"),
+        flowStep("B", "启动多智能体探索", "围绕当前问题、证据和已有规则生成候选思路，而不是硬给一个不可靠答案", "special"),
+        flowStep("C", "形成候选规则草稿", "探索结果会整理成 case draft 与 candidate rule drafts", "special"),
+        flowStep("D", "进入人工审核", "由人工判断这套候选规则是否通用、是否值得留下", "special"),
+        flowStep("E", "发布回规则库", "审核通过后变成正式规则版本；驳回后则继续重跑探索", "special"),
+      ].join("");
+    }
+
+    function renderContext(payload) {
+      const packet = payload?.context_packet;
+      if (!packet) {
+        byId("workflowContext").innerHTML = `<div class="empty-state">暂无上下文结果。</div>`;
+        return;
+      }
+      const topBlocks = packet.relevant_blocks || [];
+      const gaps = packet.context_gaps || [];
+      byId("workflowContext").innerHTML = `
+        <div class="artifact-card featured focus">
+          <h3>上下文摘要</h3>
+          <div class="section-copy">${escapeHtml(packet.context_summary || "暂无摘要")}</div>
+          <div class="detail-grid-2">
+            <div class="detail-card key">
+              <span class="micro-label">文档概况</span>
+              <div class="section-copy">材料数：${escapeHtml((packet.document_profile || {}).document_count || 0)} · 证据块：${escapeHtml(topBlocks.length)}</div>
+            </div>
+            <div class="detail-card warm">
+              <span class="micro-label">当前关注</span>
+              <div class="section-copy">${escapeHtml(((packet.query_profile || {}).question_text || "").slice(0, 140) || "暂无问题摘要。")}</div>
+            </div>
+            <div class="detail-card muted">
+              <span class="micro-label">仍待补充</span>
+              <div class="section-copy">${escapeHtml(gaps.length ? gaps.join("、") : "当前没有明显缺口。")}</div>
+            </div>
+            <div class="detail-card key">
+              <span class="micro-label">主要证据</span>
+              <div class="section-copy">${escapeHtml(topBlocks.slice(0, 2).map((item) => item.text || "").join(" / ").slice(0, 180) || "暂无主要证据摘要。")}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRuleSkill(payload) {
+      const bindings = payload?.rule_bindings || [];
+      const draft = payload?.runtime_skill_spec_preview || payload?.runtime_skill_artifact || null;
+      const explorationRuntime = payload?.exploration_runtime || null;
+      const candidateDrafts = explorationRuntime?.candidate_rule_drafts || [];
+      byId("workflowRuleSkill").innerHTML = `
+        <div class="artifact-card olive focus">
+          <h3>规则复用与候选草稿</h3>
+          ${bindings.length ? bindings.slice(0, 3).map((item) => `
+            <div class="detail-card ${item.binding_status === "bindable" ? "key" : "muted"}" style="margin-top:12px;">
+              <h3>${escapeHtml(item.rule_name || item.rule_id || "方法")}</h3>
+              <div class="section-copy">${escapeHtml(item.context_summary || item.binding_status_text || "暂无说明")}</div>
+            </div>
+          `).join("") : `<div class="empty-state">暂无方法匹配结果。</div>`}
+          ${candidateDrafts.length ? `
+            <div class="detail-card warm" style="margin-top:12px;">
+              <h3>多智能体候选规则</h3>
+              <div class="section-copy">当前 exploration 已产出 ${escapeHtml(candidateDrafts.length)} 条候选规则草稿，推荐动作是 ${escapeHtml(candidateDrafts[0]?.recommended_action || "-")}。</div>
+            </div>
+          ` : ""}
+        </div>
+        <div class="artifact-card featured soft" style="margin-top: 14px;">
+          <h3>本次方法草稿</h3>
+          ${draft ? `
+            <span class="micro-label">名称</span>
+            <div class="headline-value">${escapeHtml(draft.skill_name || draft.title || "本次方法草稿")}</div>
+            <div class="section-copy" style="margin-top:10px;">${escapeHtml(draft.description || "当前已生成可复用的方法草稿。")}</div>
+          ` : `<div class="empty-state">当前还没有形成本次方法草稿。</div>`}
+        </div>
+      `;
+    }
+
+    function renderAgent(payload) {
+      const result = payload?.super_agent_result || null;
+      byId("workflowAgent").innerHTML = `
+        <div class="artifact-card rust focus">
+          <h3>求解记录</h3>
+          ${result ? `
+            <div class="meta-strip">
+              ${chip(`答案来源：${displayAnswerSource(payload.answer_engine)}`)}
+              ${chip(`求解轮次：${result.turns || "-"}`)}
+              ${chip(`工具调用：${result.tool_call_count || 0}`)}
+            </div>
+            ${result.final_text ? `<div class="detail-card key" style="margin-top:12px;"><span class="micro-label">最终输出</span><div class="section-copy">${escapeHtml(String(result.final_text).slice(0, 240))}</div></div>` : ""}
+          ` : `<div class="empty-state">暂无更完整的求解记录。</div>`}
+        </div>
+      `;
+    }
+
+    const payload = loadWorkspaceSnapshot();
+    renderSummary(payload);
+    renderCommon(payload);
+    renderSpecial();
+    renderContext(payload);
+    renderRuleSkill(payload);
+    renderAgent(payload);
+  </script>
+</body>
+</html>

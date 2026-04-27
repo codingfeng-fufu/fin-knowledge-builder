@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "case_step.schema.json",
+  "type": "object",
+  "properties": {
+    "step_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "tool": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "expected_output": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "evidence_snippet_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "step_id",
+    "description",
+    "tool",
+    "inputs",
+    "expected_output",
+    "evidence_snippet_ids"
+  ],
+  "additionalProperties": false
+}

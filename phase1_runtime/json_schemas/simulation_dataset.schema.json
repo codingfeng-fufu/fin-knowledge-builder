@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "simulation_dataset.schema.json",
+  "type": "object",
+  "properties": {
+    "dataset_id": {
+      "type": "string"
+    },
+    "scenario_name": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "question": {
+      "$ref": "question_struct.schema.json"
+    },
+    "document_bundle": {
+      "$ref": "document_bundle_record.schema.json"
+    },
+    "case_record": {
+      "$ref": "case_record.schema.json"
+    },
+    "rule_pool": {
+      "type": "array",
+      "items": {
+        "$ref": "rule.schema.json"
+      }
+    },
+    "review_task": {
+      "$ref": "review_task.schema.json"
+    },
+    "execution_trace": {
+      "$ref": "execution_trace_record.schema.json"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "scenario_name",
+    "generated_at",
+    "question",
+    "document_bundle",
+    "case_record",
+    "rule_pool",
+    "review_task",
+    "execution_trace"
+  ],
+  "additionalProperties": false
+}

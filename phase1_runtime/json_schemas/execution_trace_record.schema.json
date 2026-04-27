@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "execution_trace_record.schema.json",
+  "type": "object",
+  "properties": {
+    "trace_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "route_decision": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "question_struct": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "retrieval": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "resolved_inputs": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "step_contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "step_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "validator_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "final_result": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "failure_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_plan": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "composition_trace": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "feedback": {
+      "type": "array",
+      "items": {
+        "$ref": "feedback_record.schema.json"
+      }
+    }
+  },
+  "required": [
+    "trace_id",
+    "created_at",
+    "route_decision",
+    "status",
+    "question_struct",
+    "retrieval",
+    "resolved_inputs",
+    "step_contracts",
+    "step_results",
+    "validator_results",
+    "final_result",
+    "failure_reason"
+  ],
+  "additionalProperties": false
+}

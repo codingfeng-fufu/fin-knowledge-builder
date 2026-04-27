@@ -1,0 +1,7 @@
+{
+  "question_text": "贷款将在2026-04-15到期，合同规定到期前30天需通知借款人办理展期手续，现在距离到期20天，是否需要发送展期通知？",
+  "question_types": ["policy_check"],
+  "intents": ["compare", "judge"],
+  "document_types": ["contract", "policy"],
+  "extracted_inputs": {}
+}

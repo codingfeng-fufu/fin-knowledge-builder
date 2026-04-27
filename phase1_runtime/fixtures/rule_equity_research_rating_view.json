@@ -1,0 +1,85 @@
+{
+  "rule_id": "equity_research.rating_view.v1",
+  "name": "Equity research rating and view summary",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "composite",
+  "rule_family": "equity_research",
+  "trigger": {
+    "query_signals": ["评级", "增持", "减持", "买入", "卖出", "维持", "上调", "下调", "观点", "逻辑", "投资要点"],
+    "question_types": ["analysis_query"],
+    "intents": ["extract", "summarize"]
+  },
+  "applicability": {
+    "document_types": ["report"],
+    "scope": "适用于回答研报的评级、评级变动、整体观点和核心投资逻辑。",
+    "non_scope": "不适用于目标价或详细估值拆解。"
+  },
+  "inputs": {
+    "required": [],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "build_rating_answer",
+      "type": "explain",
+      "goal": "基于研报文档直接输出评级、评级变动和核心投资逻辑摘要。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "analyst_rating", "type": "string", "description": "分析师评级"},
+          {"key": "rating_change", "type": "string", "description": "评级变动"},
+          {"key": "rating_rationale", "type": "string", "description": "核心投资逻辑"},
+          {"key": "answer_text", "type": "string", "description": "完整的评级与观点摘要"},
+          {"key": "decision", "type": "string", "description": "rating_bullish / rating_neutral / rating_bearish / needs_review"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "build_research_rating_answer",
+        "allowed_tools": ["build_research_rating_answer"]
+      },
+      "constraints": {
+        "must_use_evidence": true,
+        "chunk_top_k": 8
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["analyst_rating", "rating_change", "rating_rationale", "answer_text", "decision", "evidence_refs"],
+      "properties": {
+        "analyst_rating": {"type": "string"},
+        "rating_change": {"type": "string"},
+        "rating_rationale": {"type": "string"},
+        "answer_text": {"type": "string"},
+        "decision": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["analyst_rating", "answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": [],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-04-08T00:00:00+00:00"
+    }
+  }
+}

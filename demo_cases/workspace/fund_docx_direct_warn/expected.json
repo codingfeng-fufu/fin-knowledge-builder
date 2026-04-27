@@ -1,0 +1,17 @@
+{
+  "scenario_id": "fund_nav_warning",
+  "parser_status": "parsed_complete",
+  "route_decision": "direct_match",
+  "final_decision": "must_warn",
+  "decision_text": "需要进行风险提示",
+  "recommended_action": null,
+  "key_facts": {
+    "current_nav": 0.72,
+    "warning_threshold": 0.8,
+    "contract_requires_warning": true
+  },
+  "evidence_snippet_ids": [
+    "snippet_contract_threshold",
+    "snippet_nav_table"
+  ]
+}

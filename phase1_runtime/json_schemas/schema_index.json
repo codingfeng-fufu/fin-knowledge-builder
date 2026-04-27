@@ -1,0 +1,22 @@
+{
+  "schema_count": 17,
+  "schemas": {
+    "input_field": "input_field.schema.json",
+    "output_field": "output_field.schema.json",
+    "evidence_ref": "evidence_ref.schema.json",
+    "validator_ref": "validator_ref.schema.json",
+    "question_struct": "question_struct.schema.json",
+    "rule": "rule.schema.json",
+    "document_record": "document_record.schema.json",
+    "document_bundle_record": "document_bundle_record.schema.json",
+    "gold_answer": "gold_answer.schema.json",
+    "case_step": "case_step.schema.json",
+    "case_record": "case_record.schema.json",
+    "review_checklist_item": "review_checklist_item.schema.json",
+    "review_task": "review_task.schema.json",
+    "feedback_record": "feedback_record.schema.json",
+    "execution_trace_record": "execution_trace_record.schema.json",
+    "simulation_dataset": "simulation_dataset.schema.json",
+    "dataset_manifest": "dataset_manifest.schema.json"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review_task.schema.json",
+  "type": "object",
+  "properties": {
+    "review_task_id": {
+      "type": "string"
+    },
+    "target_type": {
+      "type": "string"
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "assignee": {
+      "type": "string"
+    },
+    "checklist": {
+      "type": "array",
+      "items": {
+        "$ref": "review_checklist_item.schema.json"
+      }
+    },
+    "comments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "review_task_id",
+    "target_type",
+    "target_id",
+    "status",
+    "assignee",
+    "checklist",
+    "comments",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

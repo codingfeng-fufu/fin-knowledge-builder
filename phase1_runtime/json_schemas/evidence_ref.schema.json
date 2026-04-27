@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evidence_ref.schema.json",
+  "type": "object",
+  "properties": {
+    "doc_id": {
+      "type": "string"
+    },
+    "locator": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "snippet_id": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "doc_id",
+    "locator",
+    "snippet_id",
+    "text"
+  ],
+  "additionalProperties": false
+}

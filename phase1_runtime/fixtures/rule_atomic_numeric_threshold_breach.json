@@ -1,0 +1,186 @@
+{
+  "rule_id": "atomic.numeric_threshold_breach.v1",
+  "name": "Atomic numeric threshold breach",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "atomic",
+  "rule_family": "private_fund_nav_warning",
+  "trigger": {
+    "query_signals": ["净值", "跌破", "风险提示", "投资者"],
+    "question_types": ["policy_check"],
+    "intents": ["compare", "judge"]
+  },
+  "applicability": {
+    "document_types": ["contract", "policy"],
+    "scope": "适用于数值阈值是否被突破的原子判断。",
+    "non_scope": "不负责最终答案生成。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "current_nav",
+        "type": "number",
+        "description": "Current fund NAV.",
+        "hints": ["净值", "NAV", "单位净值", "最新净值"]
+      },
+      {
+        "key": "warning_threshold",
+        "type": "number",
+        "description": "Contractual warning threshold.",
+        "hints": ["阈值", "警戒线", "低于", "跌破", "预警线"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_current_nav",
+      "type": "extract",
+      "goal": "从文档中找到基金当前单位净值（数字）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {
+            "key": "current_nav",
+            "type": "number",
+            "description": "Current fund NAV extracted from document."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers for the extracted value."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "llm",
+        "allowed_tools": []
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    },
+    {
+      "step_id": "extract_warning_threshold",
+      "type": "extract",
+      "goal": "从文档中找到净值预警阈值/警戒线（数字）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {
+            "key": "warning_threshold",
+            "type": "number",
+            "description": "Contractual warning threshold extracted from document."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers for the extracted value."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "llm",
+        "allowed_tools": []
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    },
+    {
+      "step_id": "atomic_check_threshold_breach",
+      "type": "judge",
+      "goal": "Determine whether the current NAV has fallen below the warning threshold.",
+      "depends_on": ["extract_current_nav", "extract_warning_threshold"],
+      "io": {
+        "inputs": [
+          "$step.extract_current_nav.output.current_nav",
+          "$step.extract_warning_threshold.output.warning_threshold"
+        ],
+        "outputs": [
+          {
+            "key": "threshold_breached",
+            "type": "boolean",
+            "description": "Whether the threshold is breached."
+          },
+          {
+            "key": "left_value",
+            "type": "number",
+            "description": "Observed NAV."
+          },
+          {
+            "key": "right_value",
+            "type": "number",
+            "description": "Configured threshold."
+          },
+          {
+            "key": "operator",
+            "type": "string",
+            "description": "Comparison operator."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers used by the comparison."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "compare_numeric",
+        "allowed_tools": ["compare_numeric"],
+        "config": {
+          "left_key": "current_nav",
+          "right_key": "warning_threshold",
+          "operator": "<",
+          "result_key": "threshold_breached",
+          "evidence_snippet_ids": ["snippet_nav_table", "snippet_contract_threshold"]
+        }
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["threshold_breached", "left_value", "right_value", "operator", "evidence_refs"],
+      "properties": {
+        "threshold_breached": {"type": "boolean"},
+        "left_value": {"type": "number"},
+        "right_value": {"type": "number"},
+        "operator": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["threshold_breached", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "step:atomic_check_threshold_breach",
+      "severity": "error"
+    },
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": ["case_private_fund_nav_warning_001"],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-03-24T00:00:00+00:00"
+    }
+  }
+}

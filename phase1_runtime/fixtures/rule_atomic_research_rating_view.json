@@ -1,0 +1,137 @@
+{
+  "rule_id": "atomic.research_rating_view.v1",
+  "name": "Research report analyst rating extraction",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "atomic",
+  "rule_family": "equity_research",
+  "trigger": {
+    "query_signals": ["评级", "增持", "减持", "买入", "卖出", "投资建议", "推荐"],
+    "question_types": ["analysis_query"],
+    "intents": ["extract", "summarize"]
+  },
+  "applicability": {
+    "document_types": ["report"],
+    "scope": "适用于从股票研报中提取分析师评级与核心投资逻辑。",
+    "non_scope": "不适用于实时行情查询或无研报文件的场景。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "analyst_rating",
+        "type": "string",
+        "description": "分析师评级（如增持/中性/减持/买入）",
+        "hints": ["评级", "增持", "减持", "买入", "卖出", "投资建议"]
+      },
+      {
+        "key": "rating_rationale",
+        "type": "string",
+        "description": "支撑评级的核心投资逻辑摘要",
+        "hints": ["逻辑", "理由", "原因", "结论"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_analyst_rating",
+      "type": "extract",
+      "goal": "从研报文档中提取分析师给出的评级（如：增持、中性、减持、买入、卖出），以及评级变动情况（如：维持、上调、下调、首次覆盖）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "analyst_rating", "type": "string", "description": "分析师评级"},
+          {"key": "rating_change", "type": "string", "description": "评级变动（维持/上调/下调/首次）"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {
+        "must_use_evidence": true,
+        "hints": ["评级", "增持", "减持", "维持", "买入", "卖出"],
+        "chunk_top_k": 8
+      }
+    },
+    {
+      "step_id": "extract_rating_rationale",
+      "type": "extract",
+      "goal": "从研报文档中提取支撑该评级的核心投资逻辑，要求列出主要依据（如：息差企稳、高股息、低估值等），用简洁的中文列举。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "rating_rationale", "type": "string", "description": "评级核心投资逻辑"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {
+        "must_use_evidence": true,
+        "hints": ["逻辑", "观点", "结论", "理由", "因为"],
+        "chunk_top_k": 8
+      }
+    },
+    {
+      "step_id": "build_rating_answer",
+      "type": "explain",
+      "goal": "综合分析师评级和核心投资逻辑，生成结构化的投资建议摘要。decision字段规则：评级为增持/买入/强烈推荐时填写rating_bullish；中性/持有时填rating_neutral；减持/卖出/回避时填rating_bearish。",
+      "depends_on": ["extract_analyst_rating", "extract_rating_rationale"],
+      "io": {
+        "inputs": [
+          "$step.extract_analyst_rating.output.analyst_rating",
+          "$step.extract_analyst_rating.output.rating_change",
+          "$step.extract_rating_rationale.output.rating_rationale"
+        ],
+        "outputs": [
+          {"key": "analyst_rating", "type": "string", "description": "分析师评级"},
+          {"key": "rating_change", "type": "string", "description": "评级变动"},
+          {"key": "rating_rationale", "type": "string", "description": "核心投资逻辑"},
+          {"key": "answer_text", "type": "string", "description": "完整的评级分析摘要"},
+          {"key": "decision", "type": "string", "description": "rating_bullish / rating_neutral / rating_bearish"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {
+        "must_use_evidence": true,
+        "chunk_top_k": 8
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["analyst_rating", "rating_change", "rating_rationale", "answer_text", "decision", "evidence_refs"],
+      "properties": {
+        "analyst_rating": {"type": "string"},
+        "rating_change": {"type": "string"},
+        "rating_rationale": {"type": "string"},
+        "answer_text": {"type": "string"},
+        "decision": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["analyst_rating", "answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": [],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-04-03T00:00:00+00:00"
+    }
+  }
+}

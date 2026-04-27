@@ -1,0 +1,133 @@
+{
+  "rule_id": "atomic.contractual_notice_gate.v1",
+  "name": "Atomic contractual notice gate",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "atomic",
+  "rule_family": "credit_loan_extension_notice",
+  "trigger": {
+    "query_signals": ["展期", "续贷", "通知", "到期", "借款人"],
+    "question_types": ["policy_check"],
+    "intents": ["compare", "judge"]
+  },
+  "applicability": {
+    "document_types": ["contract", "policy"],
+    "scope": "适用于判断通知义务是否成立。",
+    "non_scope": "不负责最终用户答案生成。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "notice_window_open",
+        "type": "boolean",
+        "description": "Whether within the notice window (from prior step).",
+        "hints": ["到期", "天", "通知", "窗口"]
+      },
+      {
+        "key": "contract_requires_notice",
+        "type": "boolean",
+        "description": "Whether the contract requires borrower notification.",
+        "hints": ["通知", "应通知", "合同约定", "借款人", "展期手续"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_contract_requires_notice",
+      "type": "extract",
+      "goal": "从文档中判断合同是否约定须通知借款人办理展期手续（布尔值）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {
+            "key": "contract_requires_notice",
+            "type": "boolean",
+            "description": "Whether contract requires borrower notification."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "llm",
+        "allowed_tools": []
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    },
+    {
+      "step_id": "atomic_check_notice_requirement",
+      "type": "judge",
+      "goal": "Determine whether the contractually required borrower notice should now be sent.",
+      "depends_on": ["extract_contract_requires_notice"],
+      "io": {
+        "inputs": [
+          "$input.notice_window_open",
+          "$step.extract_contract_requires_notice.output.contract_requires_notice"
+        ],
+        "outputs": [
+          {"key": "notice_required", "type": "boolean", "description": "Whether notice must be sent."},
+          {"key": "checked_inputs", "type": "object", "description": "Inputs evaluated."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "boolean_gate",
+        "allowed_tools": ["boolean_gate"],
+        "config": {
+          "input_keys": ["notice_window_open", "contract_requires_notice"],
+          "mode": "all_true",
+          "result_key": "notice_required",
+          "evidence_snippet_ids": ["snippet_notice_clause", "snippet_maturity_schedule"]
+        }
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["notice_required", "checked_inputs", "evidence_refs"],
+      "properties": {
+        "notice_required": {"type": "boolean"},
+        "checked_inputs": {"type": "object"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["notice_required", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "step:atomic_check_notice_requirement",
+      "severity": "error"
+    },
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": ["case_credit_loan_extension_notice_001"],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-03-25T00:00:00+00:00"
+    }
+  }
+}

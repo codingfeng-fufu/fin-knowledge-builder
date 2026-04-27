@@ -1,0 +1,26 @@
+{
+  "facts": {
+    "current_nav": 0.78,
+    "warning_threshold": 0.8,
+    "contract_requires_warning": true
+  },
+  "evidence_refs": [
+    {
+      "doc_id": "private_fund_contract_001",
+      "locator": {
+        "section": "7.4 风险揭示"
+      },
+      "snippet_id": "snippet_contract_threshold",
+      "text": "当产品净值低于0.80时，管理人应及时向投资者提示风险。"
+    },
+    {
+      "doc_id": "private_fund_nav_report_2026_q1",
+      "locator": {
+        "page": 2,
+        "section": "净值情况"
+      },
+      "snippet_id": "snippet_nav_table",
+      "text": "2026年一季度末单位净值为0.78。"
+    }
+  ]
+}

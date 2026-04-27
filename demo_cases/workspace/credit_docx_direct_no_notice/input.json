@@ -1,0 +1,10 @@
+{
+  "entry": "workspace",
+  "question_text": "是否需要发送借款人通知？",
+  "materials": [
+    {
+      "name": "notice_clause.docx",
+      "path": "materials/notice_clause.docx"
+    }
+  ]
+}

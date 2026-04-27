@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>金融文档求解工作台</title>
+  <link rel="stylesheet" href="/static/vendor/highlightjs/github-dark.min.css" />
+  <link rel="stylesheet" href="/static/app-shell.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">R</div>
+        <div class="brand-copy">
+          <small>金融规则工作台</small>
+          <strong>金融文档求解工作台</strong>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a class="nav-link" href="/">系统首页</a>
+        <a class="nav-link active" href="/workspace">问题求解</a>
+        <a class="nav-link" href="/discovery/report/task_d71ccdda2a23">探索报告</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">当前求解</span>
+        <h1>让每一次回答，都成为下一次的能力</h1>
+        <p class="hero-copy">
+          把答案变成规则，把规则变成系统持续进化的起点。
+        </p>
+        <div class="chip-row" id="heroChips">
+          <span class="chip">等待加载系统状态</span>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div>
+          <h2>当前工作台关注</h2>
+          <p>先回答三个最实际的问题：这次有没有答案、依据够不够清楚、当前结果是不是已经足够可信。</p>
+        </div>
+        <div class="hero-stat">
+          <h2>主产品承诺</h2>
+          <strong>答案、依据、明确状态</strong>
+          <p>先给结果，再给证据，再明确当前状态。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel progress-panel">
+      <div class="progress-top">
+        <div class="eyebrow">处理进度</div>
+        <span id="runProgressState" class="progress-state">待机</span>
+      </div>
+      <div class="progress-track">
+        <div id="runProgressFill" class="progress-fill"></div>
+      </div>
+      <div class="progress-meta">
+        <span id="runProgressLabel">等待运行</span>
+        <span id="runProgressPercent">0%</span>
+      </div>
+    </section>
+
+    <div class="layout-main workspace-layout">
+      <aside class="stack workspace-sidebar">
+        <section class="panel composer-panel">
+          <div class="panel-head">
+            <span class="eyebrow">开始使用</span>
+            <h2 class="section-title">先选开始方式</h2>
+            <p class="section-copy">先决定你是要直接体验推荐样本，还是上传自己的文件。系统不会自动执行，所有求解都由你手动触发。</p>
+          </div>
+          <div class="start-path-grid" id="startPathGrid">
+            <button class="start-path-card active" id="sampleStartBtn" type="button">
+              <span class="micro-label">方式一</span>
+              <h3>直接体验推荐样本</h3>
+              <div class="section-copy">适合第一次体验。系统会预载入一个更稳定的示例问题和演示材料。</div>
+            </button>
+            <button class="start-path-card" id="uploadStartBtn" type="button">
+              <span class="micro-label">方式二</span>
+              <h3>上传自己的文件</h3>
+              <div class="section-copy">适合正式求解。本地文件会覆盖样本材料，你也可以顺手改成自己的问法。</div>
+            </button>
+          </div>
+          <div id="startModeStatus" class="start-mode-status"></div>
+          <div class="composer-form">
+            <div class="field">
+              <label for="scenarioSelect">场景</label>
+              <select id="scenarioSelect">
+                <option value="">自动识别</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="questionInput">业务问题</label>
+              <textarea id="questionInput" placeholder="例如：某私募产品净值跌破 0.80 后，是否需要向投资者做风险提示？"></textarea>
+              <div id="questionStatus" class="field-help">载入样本后，这里会显示当前问题。</div>
+            </div>
+            <div class="field">
+              <label for="fileInput">上传文档</label>
+              <input id="fileInput" type="file" multiple />
+              <div id="fileList" class="card-list"></div>
+            </div>
+          </div>
+          <div class="composer-note">
+            <div class="mini-note">
+              <strong>运行方式</strong>
+              <span>样本模式下可以直接运行；上传模式下，只有选好本地文件后才会启用求解按钮。</span>
+            </div>
+          </div>
+          <div class="button-row action-row">
+            <button class="btn-primary" id="solveBtn">运行当前问题</button>
+            <button class="btn-secondary" id="clearBtn">清空输入</button>
+            <a class="nav-link" href="/">返回首页</a>
+          </div>
+        </section>
+
+        <section class="panel panel-subtle">
+          <div class="panel-head">
+            <span class="eyebrow">推荐样本</span>
+            <h2 class="section-title">推荐样本</h2>
+            <p class="section-copy">推荐样本会直接带上演示材料，既包含稳定复用场景，也包含复杂规则加代码核验的重点样本。</p>
+          </div>
+          <div id="sampleList" class="sample-list">
+            <div class="empty-state">正在加载样本…</div>
+          </div>
+          <div class="subsection-divider"></div>
+          <div class="subsection-head">
+            <span class="micro-label">任务模板</span>
+            <h3 class="subsection-title">典型分析任务</h3>
+            <p class="section-copy">这里提供同一批材料下的不同分析任务，用于展示系统在不同问题强度下的处理能力。</p>
+          </div>
+          <div id="relatedQuestionList" class="compact-question-list">
+            <div class="empty-state">载入样本后显示相关问题。</div>
+          </div>
+        </section>
+      </aside>
+
+      <main class="stack workspace-main">
+        <section class="decision-stage">
+          <section class="decision-main">
+            <div class="decision-topbar">
+              <div class="panel-head decision-head">
+                <span class="eyebrow">当前结果</span>
+                <h2 class="section-title decision-title">最终建议</h2>
+                <p class="section-copy">先看结论，再看依据和状态。系统会尽量给出明确答案；如果当前材料不足或需要复核，也会在这里直接说明。</p>
+              </div>
+              <div class="status-row" id="answerStatus">
+                <span class="chip">等待运行</span>
+              </div>
+            </div>
+            <div class="answer-shell">
+              <div class="answer-toolbar">
+                <button class="btn-ghost answer-copy-btn" id="copyAnswerBtn" type="button">复制最终建议</button>
+                <span id="copyAnswerStatus" class="answer-copy-status" aria-live="polite"></span>
+              </div>
+              <div id="answerView" class="answer-display"><p>选择推荐样本，或上传文件后点击“运行当前问题”。</p></div>
+              <div id="answerMeta" class="answer-copy answer-meta">当前页面将展示最终回答、结论状态和主要证据。</div>
+            </div>
+          </section>
+
+          <aside class="decision-side">
+            <div class="artifact-card result-side-card">
+              <div class="side-card-head">
+                <span class="eyebrow">结果概览</span>
+                <h3>结果概览</h3>
+              </div>
+              <div class="result-side-section">
+                <div class="micro-label">当前状态</div>
+                <div id="decisionSummary" class="mini-stat-grid">
+                  <div class="mini-stat"><span class="kpi-label">路由</span><strong>待匹配</strong></div>
+                  <div class="mini-stat"><span class="kpi-label">回答引擎</span><strong>待执行</strong></div>
+                  <div class="mini-stat"><span class="kpi-label">关键证据</span><strong>0</strong></div>
+                </div>
+              </div>
+              <div class="result-side-divider"></div>
+              <div class="result-side-section">
+                <div class="micro-label">关键证据</div>
+                <div class="section-copy">如果这次结论值得采用，你最先应该看的就是这里。</div>
+                <div id="evidenceList" class="card-list" style="margin-top:12px;">
+                  <div class="empty-state">尚无证据。</div>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="panel">
+          <span class="eyebrow">执行细节</span>
+          <h2 class="section-title">执行详情</h2>
+          <p class="section-copy">只有在你需要进一步判断“为什么这么答”或“为什么还没答稳”时，才需要看这里。默认顺序是：先看依据，再看状态，最后才看内部记录。</p>
+          <div class="segment-nav">
+            <button class="segment-button active" data-detail-tab="evidence">判断依据</button>
+            <button class="segment-button" data-detail-tab="status">状态说明</button>
+            <button class="segment-button" data-detail-tab="internal">内部记录</button>
+          </div>
+          <div id="detailSurface" class="detail-surface">
+            <div class="empty-state">运行后展示详情。</div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="explorationOverlay" class="exploration-overlay" hidden>
+    <div class="exploration-overlay-backdrop" data-exploration-close="true"></div>
+    <div class="exploration-overlay-panel">
+      <div class="exploration-overlay-head">
+        <div>
+          <span class="eyebrow">多智能体探索</span>
+          <h2 class="section-title">正在展示探索全过程</h2>
+        </div>
+        <div class="button-row">
+          <a id="explorationOverlayReportLink" class="nav-link" href="/discovery/report/task_d71ccdda2a23">查看探索报告</a>
+          <button class="btn-secondary" type="button" data-exploration-close="true">关闭</button>
+        </div>
+      </div>
+      <div class="exploration-overlay-frame-wrap">
+        <div class="exploration-overlay-loading" id="explorationOverlayLoading">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          <div class="loading-label">正在加载探索工作台…</div>
+        </div>
+        <iframe
+          id="explorationWorkbenchFrame"
+          class="exploration-overlay-frame"
+          src="about:blank"
+          title="多智能体探索工作台"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app-core.js"></script>
+  <script src="/static/vendor/highlightjs/highlight.min.js"></script>
+  <script src="/static/ui-feedback.js"></script>
+  <script src="/static/workspace-renderers.js"></script>
+  <script src="/static/workspace-app.js"></script>
+</body>
+</html>

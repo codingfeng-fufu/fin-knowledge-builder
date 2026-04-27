@@ -1,0 +1,5 @@
+{
+  "route_decision": "rule_composable",
+  "composition_pattern": "derive_then_decide",
+  "final_decision": "must_warn"
+}

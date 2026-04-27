@@ -1,0 +1,155 @@
+{
+  "rule_id": "atomic.policy_answer_builder.v1",
+  "name": "Atomic policy answer builder",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "atomic",
+  "rule_family": "private_fund_nav_warning",
+  "trigger": {
+    "query_signals": ["净值", "跌破", "风险提示", "投资者"],
+    "question_types": ["policy_check"],
+    "intents": ["compare", "judge"]
+  },
+  "applicability": {
+    "document_types": ["contract", "policy"],
+    "scope": "适用于基于上游判断结果构造最终答案。",
+    "non_scope": "不负责单独做阈值或义务判断。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "threshold_breached",
+        "type": "boolean",
+        "description": "Whether the NAV threshold has been breached (from prior step).",
+        "hints": ["净值", "跌破", "阈值"]
+      },
+      {
+        "key": "warning_required",
+        "type": "boolean",
+        "description": "Whether a warning is required (from prior step).",
+        "hints": ["风险提示", "提示风险"]
+      },
+      {
+        "key": "contract_requires_warning",
+        "type": "boolean",
+        "description": "Whether the contract mandates a warning.",
+        "hints": ["风险提示", "合同约定", "应向投资者", "提示风险", "应及时"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_contract_requires_warning",
+      "type": "extract",
+      "goal": "从文档中��断合同是否约定了净值跌破阈值后须向投资者提示风险（布尔值）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {
+            "key": "contract_requires_warning",
+            "type": "boolean",
+            "description": "Whether contract requires warning when threshold is breached."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers for the contract clause."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "llm",
+        "allowed_tools": []
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    },
+    {
+      "step_id": "atomic_build_final_answer",
+      "type": "explain",
+      "goal": "Build the final answer payload for the user.",
+      "depends_on": ["extract_contract_requires_warning"],
+      "io": {
+        "inputs": [
+          "$input.threshold_breached",
+          "$input.warning_required",
+          "$step.extract_contract_requires_warning.output.contract_requires_warning"
+        ],
+        "outputs": [
+          {"key": "answer_text", "type": "string", "description": "Human-readable answer."},
+          {"key": "decision", "type": "string", "description": "Machine-readable decision code."},
+          {"key": "threshold_breached", "type": "boolean", "description": "Whether threshold breached."},
+          {"key": "warning_required", "type": "boolean", "description": "Whether warning required."},
+          {"key": "explanation", "type": "string", "description": "Step-by-step explanation."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "build_policy_answer",
+        "allowed_tools": ["build_policy_answer"],
+        "config": {
+          "decision_input_key": "warning_required",
+          "threshold_input_key": "threshold_breached",
+          "positive_text": "需要做风险提示，因为净值已经跌破合同阈值，且合同明确要求触发后向投资者提示风险。",
+          "negative_text": "当前不能直接认定需要提示风险，还需补充确认阈值是否触发或合同义务是否成立。",
+          "positive_decision": "must_warn",
+          "negative_decision": "needs_review",
+          "evidence_snippet_ids": ["snippet_contract_threshold", "snippet_nav_table"]
+        }
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["answer_text", "decision", "threshold_breached", "warning_required", "explanation", "evidence_refs"],
+      "properties": {
+        "answer_text": {"type": "string"},
+        "decision": {"type": "string"},
+        "threshold_breached": {"type": "boolean"},
+        "warning_required": {"type": "boolean"},
+        "explanation": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "step:atomic_build_final_answer",
+      "severity": "error"
+    },
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "must_include",
+      "target": "final",
+      "severity": "error",
+      "params": {"fields": ["answer_text", "decision", "evidence_refs"]}
+    }
+  ],
+  "provenance": {
+    "source_cases": ["case_private_fund_nav_warning_001"],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-03-24T00:00:00+00:00"
+    }
+  }
+}

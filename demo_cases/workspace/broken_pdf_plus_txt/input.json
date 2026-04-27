@@ -1,0 +1,14 @@
+{
+  "entry": "workspace",
+  "question_text": "是否需要发送借款人通知？",
+  "materials": [
+    {
+      "name": "broken_notice.pdf",
+      "path": "materials/broken_notice.pdf"
+    },
+    {
+      "name": "notice_clause.txt",
+      "path": "materials/notice_clause.txt"
+    }
+  ]
+}

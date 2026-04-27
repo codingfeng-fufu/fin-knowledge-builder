@@ -1,0 +1,107 @@
+{
+  "rule_id": "equity_research.rating_target_audit.v1",
+  "name": "Equity research valuation table recalculation audit",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "composite",
+  "rule_family": "equity_research",
+  "trigger": {
+    "query_signals": ["Python", "代码", "收盘价", "核验", "复算", "PE", "PB", "每股盈利", "每股净资产", "评级", "下行风险", "估值简表"],
+    "question_types": ["analysis_query"],
+    "intents": ["extract", "compute", "judge", "summarize"]
+  },
+  "applicability": {
+    "document_types": ["report"],
+    "scope": "适用于对个股研报执行‘评级 + 盈利预测与估值简表 + 风险提示’的一次性复算审计任务，并输出可复核的 Python 代码。",
+    "non_scope": "不适用于纯聊天式总结，或没有价格信息、没有估值表信息的非证券研报。"
+  },
+  "inputs": {
+    "required": [],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "build_rating_target_audit_answer",
+      "type": "explain",
+      "goal": "基于研报文档输出一个完整的核验型答案：先提取评级、收盘价以及盈利预测与估值简表中的关键字段，再给出 Python 代码复算 2026E-2028E 的 PE 和 PB，并判断表格结果是否自洽，最后用三句话总结理由。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          { "key": "analyst_rating", "type": "string", "description": "分析师评级" },
+          { "key": "rating_change", "type": "string", "description": "评级变动" },
+          { "key": "current_price", "type": "number", "description": "当前价格或收盘价；未稳定提取时返回 -1" },
+          { "key": "target_price", "type": "number", "description": "保留字段；本题不以目标价为主要核验对象，默认返回 -1" },
+          { "key": "target_display", "type": "string", "description": "用于展示当前核验对象说明" },
+          { "key": "key_risks", "type": "string", "description": "主要下行风险" },
+          { "key": "python_code", "type": "string", "description": "用于核验的 Python 代码" },
+          { "key": "upside_percent", "type": "number", "description": "保留字段；本题不以单一上涨空间为主要核验对象，默认返回 -1" },
+          { "key": "rating_supported", "type": "string", "description": "yes / no / undetermined；表示本次复算是否仍支持研报评级方向" },
+          { "key": "answer_text", "type": "string", "description": "完整核验型答案" },
+          { "key": "decision", "type": "string", "description": "audit_completed / needs_review" },
+          { "key": "evidence_refs", "type": "array", "description": "原文出处" }
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "build_research_rating_target_audit_answer",
+        "allowed_tools": ["build_research_rating_target_audit_answer"]
+      },
+      "constraints": {
+        "must_use_evidence": true,
+        "chunk_top_k": 10
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": [
+        "analyst_rating",
+        "current_price",
+        "target_price",
+        "target_display",
+        "key_risks",
+        "python_code",
+        "answer_text",
+        "decision",
+        "evidence_refs"
+      ],
+      "properties": {
+        "analyst_rating": { "type": "string" },
+        "rating_change": { "type": "string" },
+        "current_price": { "type": "number" },
+        "target_price": { "type": "number" },
+        "target_display": { "type": "string" },
+        "key_risks": { "type": "string" },
+        "python_code": { "type": "string" },
+        "upside_percent": { "type": "number" },
+        "rating_supported": { "type": "string" },
+        "answer_text": { "type": "string" },
+        "decision": { "type": "string" },
+        "evidence_refs": { "type": "array" }
+      }
+    },
+    "must_include": ["answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": [],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-04-22T00:00:00+00:00"
+    }
+  }
+}

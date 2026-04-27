@@ -1,0 +1,99 @@
+{
+  "rule_id": "equity_research.risk_count_view.v1",
+  "name": "Equity research downside risk count",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "composite",
+  "rule_family": "equity_research",
+  "trigger": {
+    "query_signals": [
+      "几项",
+      "多少项",
+      "几条",
+      "列出",
+      "列出了",
+      "数量",
+      "风险数量",
+      "下行风险",
+      "主要下行风险",
+      "几项主要下行风险",
+      "多少项主要下行风险",
+      "列出了几项",
+      "列出了几项主要下行风险",
+      "主要下行风险有几项",
+      "列出了几项主要下行风险"
+    ],
+    "question_types": ["analysis_query"],
+    "intents": ["extract", "summarize"]
+  },
+  "applicability": {
+    "document_types": ["report"],
+    "scope": "适用于统计研报中主要下行风险的条数。",
+    "non_scope": "不适用于评级、目标价、估值方法查询。"
+  },
+  "inputs": {
+    "required": [],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "build_risk_count_answer",
+      "type": "explain",
+      "goal": "基于研报文档直接统计主要下行风险数量，并输出简洁答案。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "risk_count", "type": "number", "description": "主要下行风险条数"},
+          {"key": "key_risks", "type": "string", "description": "主要下行风险摘要"},
+          {"key": "answer_text", "type": "string", "description": "数量统计答案"},
+          {"key": "decision", "type": "string", "description": "risk_count_answered / needs_review"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "build_research_risk_count_answer",
+        "allowed_tools": ["build_research_risk_count_answer"]
+      },
+      "constraints": {
+        "must_use_evidence": true,
+        "chunk_top_k": 8
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["risk_count", "key_risks", "answer_text", "decision", "evidence_refs"],
+      "properties": {
+        "risk_count": {"type": "number"},
+        "key_risks": {"type": "string"},
+        "answer_text": {"type": "string"},
+        "decision": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["risk_count", "answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": [],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-04-09T00:00:00+00:00"
+    }
+  }
+}

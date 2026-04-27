@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>典型案例总览</title>
+  <link rel="stylesheet" href="/static/app-shell.css" />
+  <link rel="stylesheet" href="/static/demo-shell.css" />
+</head>
+<body class="demo-body">
+  <div class="page-shell demo-page">
+    <header class="topbar demo-topbar">
+      <div class="brand">
+        <div class="brand-mark">D</div>
+        <div class="brand-copy">
+          <small>案例总览</small>
+          <strong>典型案例</strong>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a class="nav-link" href="/">系统首页</a>
+        <a class="nav-link" href="/workspace">问题求解</a>
+        <a class="nav-link" href="/discovery/report/task_d71ccdda2a23">探索报告</a>
+      </nav>
+    </header>
+
+    <section class="hero demo-hero">
+      <div class="demo-hero-copy">
+        <span class="eyebrow">案例总览</span>
+        <h1>从规则复用，到规则生长。</h1>
+        <p class="hero-copy">
+          这里汇总了当前系统最具代表性的案例。你可以先看已有规则如何解决问题，再看系统在规则不足时如何进入探索与生长链。
+        </p>
+        <div class="chip-row" id="demoHeroChips">
+          <span class="chip">正在装载演示剧本</span>
+        </div>
+        <div class="button-row demo-hero-actions">
+          <button class="btn-olive" id="presenterModeBtn" type="button">自动浏览当前案例</button>
+          <button class="btn-primary" id="demoRunBtn" type="button">载入当前案例</button>
+          <button class="btn-secondary" id="jumpCompositionBtn" type="button">查看规则与证据</button>
+          <button class="btn-ghost" id="jumpAssetBtn" type="button">查看规则生长</button>
+        </div>
+      </div>
+
+      <div class="hero-side demo-hero-side">
+        <div class="demo-side-block">
+          <span class="eyebrow">当前案例</span>
+          <h2 id="heroFlowTitle">正在载入案例</h2>
+          <p id="heroFlowCopy">当前页面会优先展示最适合说明系统能力的典型案例。</p>
+        </div>
+        <div class="demo-hero-stat-grid">
+          <div class="demo-hero-stat-card">
+            <span class="kpi-label">当前处理方式</span>
+            <strong id="heroRouteValue">等待运行</strong>
+          </div>
+          <div class="demo-hero-stat-card">
+            <span class="kpi-label">资产规模</span>
+            <strong id="heroAssetValue">加载中</strong>
+          </div>
+          <div class="demo-hero-stat-card">
+            <span class="kpi-label">一致性</span>
+            <strong id="heroConsistencyValue">等待验证</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel demo-script-panel" aria-label="演示脚本">
+        <div class="demo-script-head">
+          <div>
+            <span class="eyebrow">案例结构</span>
+          <h2 class="section-title">三段看清系统能力</h2>
+          </div>
+          <span class="chip gold" id="scriptModeStatus">手动模式</span>
+        </div>
+        <div class="demo-script-steps" id="demoScriptSteps">
+          <button class="demo-script-card active" data-act-target="act-answer" type="button">
+            <span class="demo-script-number">01</span>
+          <strong>问题与结果</strong>
+          <p>当前案例解决了什么问题，给出了什么结果。</p>
+          </button>
+          <button class="demo-script-card" data-act-target="act-composition" type="button">
+            <span class="demo-script-number">02</span>
+          <strong>规则与证据</strong>
+          <p>为什么结果成立，以及系统用了哪些规则和证据。</p>
+          </button>
+          <button class="demo-script-card" data-act-target="act-assets" type="button">
+            <span class="demo-script-number">03</span>
+          <strong>规则生长</strong>
+          <p>规则不足时如何进入探索，并把结果沉淀回规则库。</p>
+          </button>
+        </div>
+      </section>
+
+    <section class="panel progress-panel demo-progress-panel">
+      <div class="progress-top">
+        <div class="eyebrow">载入进度</div>
+        <span id="demoProgressState" class="progress-state">待机</span>
+      </div>
+      <div class="progress-track">
+        <div id="demoProgressFill" class="progress-fill"></div>
+      </div>
+      <div class="progress-meta">
+        <span id="demoProgressLabel">等待播放</span>
+        <span id="demoProgressPercent">0%</span>
+      </div>
+    </section>
+
+    <section class="summary-band demo-summary-band">
+      <div class="eyebrow">当前案例总览</div>
+      <div id="demoSummaryGrid" class="summary-grid">
+        <div class="summary-card">
+          <span class="kpi-label">第一幕</span>
+          <strong>问题与结果</strong>
+        </div>
+        <div class="summary-card">
+          <span class="kpi-label">第二幕</span>
+          <strong>规则与证据</strong>
+        </div>
+        <div class="summary-card">
+          <span class="kpi-label">第三幕</span>
+          <strong>规则生长</strong>
+        </div>
+        <div class="summary-card">
+          <span class="kpi-label">当前状态</span>
+          <strong>等待播放</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel demo-brief-panel">
+      <div class="demo-script-head">
+        <div>
+          <span class="eyebrow">系统能力</span>
+          <h2 class="section-title">先看复用，再看生长</h2>
+        </div>
+      </div>
+      <div class="layout-2col demo-brief-layout">
+        <div id="engineBoard" class="demo-brief-grid">
+          <div class="demo-placeholder">正在整理双引擎展示…</div>
+        </div>
+        <div id="recordingBoard" class="demo-brief-grid operator-only">
+          <div class="demo-placeholder">正在整理录屏路径…</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="stack demo-stack">
+      <section class="panel demo-stage" id="act-answer">
+        <div class="demo-stage-head">
+          <div>
+            <span class="eyebrow">第一段</span>
+            <h2 class="section-title">当前案例解决了什么问题</h2>
+            <p class="section-copy">这一部分只展示当前问题、材料和最终结果，让人先看懂系统实际解决了什么任务。</p>
+          </div>
+          <div class="demo-stage-kicker">问题 -> 文档 -> 结果</div>
+        </div>
+
+        <div id="flowRail" class="demo-flow-rail">
+          <div class="demo-placeholder">正在加载演示 flow…</div>
+        </div>
+
+        <div class="demo-stage-grid">
+          <div id="caseBrief" class="demo-story-card">
+            <div class="demo-placeholder">等待案例载入。</div>
+          </div>
+          <div id="answerSpotlight" class="demo-answer-card">
+            <div class="demo-placeholder">播放后展示最终答案。</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel demo-stage" id="act-composition">
+        <div class="demo-stage-head">
+          <div>
+            <span class="eyebrow">第二段</span>
+            <h2 class="section-title">结果为什么成立</h2>
+            <p class="section-copy">这一部分展示规则匹配、证据摘录和执行过程，让结果的来源更清楚、更可复查。</p>
+          </div>
+          <div class="demo-stage-kicker">规则 -> 证据 -> 执行</div>
+        </div>
+
+        <div class="layout-2col demo-composition-layout">
+          <div class="stack">
+            <div id="routeNarrative" class="demo-story-card">
+              <div class="demo-placeholder">等待路径说明。</div>
+            </div>
+            <div id="ruleChain" class="demo-rule-chain">
+              <div class="demo-placeholder">等待规则链路。</div>
+            </div>
+            <div id="retrievalProof" class="demo-proof-grid">
+              <div class="demo-placeholder">等待匹配证明。</div>
+            </div>
+          </div>
+          <div class="stack">
+            <div id="executionTimeline" class="demo-timeline">
+              <div class="demo-placeholder">等待执行时间线。</div>
+            </div>
+            <div id="evidencePanel" class="demo-evidence-panel">
+              <div class="demo-placeholder">等待证据摘录。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel demo-stage" id="act-assets">
+        <div class="demo-stage-head">
+          <div>
+            <span class="eyebrow">第三段</span>
+            <h2 class="section-title">系统如何继续生长</h2>
+            <p class="section-copy">这一部分展示系统在规则不足时如何进入探索、形成候选规则，并继续进入后续治理与发布流程。</p>
+          </div>
+          <div class="demo-stage-kicker">多智能体探索 -> feedback -> review -> publish</div>
+        </div>
+
+        <div class="layout-2col demo-asset-layout">
+          <div class="stack">
+            <div id="assetSnapshot" class="demo-asset-grid">
+              <div class="demo-placeholder">等待资产快照。</div>
+            </div>
+            <div id="communityCard" class="demo-story-card">
+              <div class="demo-placeholder">等待方法社区摘要。</div>
+            </div>
+          </div>
+          <div class="stack">
+            <div id="feedbackCard" class="demo-story-card">
+              <div class="demo-placeholder">等待沉淀动作说明。</div>
+            </div>
+            <div id="takeawaysCard" class="demo-story-card">
+              <div class="demo-placeholder">等待演示结论。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="/static/app-core.js"></script>
+  <script src="/static/ui-feedback.js"></script>
+  <script src="/static/demo-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "entry": "workspace",
+  "question_text": "某私募产品净值跌破0.80后，是否需要向投资者做风险提示？",
+  "scenario_id": "fund_nav_warning",
+  "materials": [
+    {
+      "name": "fund_clause.docx",
+      "path": "materials/fund_clause.docx"
+    }
+  ]
+}

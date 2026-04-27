@@ -1,0 +1,18 @@
+{
+  "scenario_id": "credit_notice",
+  "parser_status": "parsed_with_defaults",
+  "route_decision": "direct_match",
+  "final_decision": "no_notice_required",
+  "decision_text": "当前无需发送通知",
+  "recommended_action": null,
+  "unsupported_file_count": 1,
+  "key_facts": {
+    "days_to_maturity": 20,
+    "notice_threshold_days": 5,
+    "contract_requires_notice": true
+  },
+  "evidence_snippet_ids": [
+    "snippet_notice_clause",
+    "snippet_maturity_schedule"
+  ]
+}

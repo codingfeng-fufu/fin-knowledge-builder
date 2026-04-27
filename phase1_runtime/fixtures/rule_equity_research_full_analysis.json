@@ -1,0 +1,171 @@
+{
+  "rule_id": "equity_research.full_analysis.v1",
+  "name": "Equity research report full analysis",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "composite",
+  "rule_family": "equity_research",
+  "trigger": {
+    "query_signals": ["研报", "分析", "评级", "目标价", "股票", "投资", "建议"],
+    "question_types": ["analysis_query"],
+    "intents": ["extract", "summarize"]
+  },
+  "applicability": {
+    "document_types": ["report"],
+    "scope": "适用于对股票研报的综合分析：评级观点、目标价估值、主要风险一次性输出。",
+    "non_scope": "不适用于仅需单一维度查询的场景，建议改用对应 atomic 规则。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "analyst_rating",
+        "type": "string",
+        "description": "分析师评级",
+        "hints": ["评级", "增持", "减持", "买入"]
+      },
+      {
+        "key": "target_price",
+        "type": "number",
+        "description": "目标价（元）",
+        "hints": ["目标价", "上涨空间"]
+      },
+      {
+        "key": "key_risks",
+        "type": "string",
+        "description": "主要下行风险",
+        "hints": ["风险", "下行", "不确定"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_analyst_rating",
+      "type": "extract",
+      "goal": "从研报文档中提取分析师评级（如增持/中性/减持）以及评级变动（维持/上调/下调/首次）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "analyst_rating", "type": "string", "description": "分析师评级"},
+          {"key": "rating_change", "type": "string", "description": "评级变动"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {
+        "must_use_evidence": true,
+        "hints": ["评级", "增持", "减持", "维持", "买入"],
+        "chunk_top_k": 8
+      }
+    },
+    {
+      "step_id": "extract_target_price",
+      "type": "extract",
+      "goal": "从研报文档中提取目标价（具体数字，单位元）及估值方法（PB/PE/DCF）和估值���数。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "target_price", "type": "number", "description": "目标价（元）"},
+          {"key": "valuation_method", "type": "string", "description": "估值方法"},
+          {"key": "valuation_multiple", "type": "string", "description": "估值倍数"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {
+        "must_use_evidence": true,
+        "hints": ["目标价", "上涨空间", "PB", "PE", "估值"],
+        "chunk_top_k": 8
+      }
+    },
+    {
+      "step_id": "extract_key_risks",
+      "type": "extract",
+      "goal": "从研报文档中提取分析师列出的主要下行风险，分条列举。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {"key": "key_risks", "type": "string", "description": "主要下行风险"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {
+        "must_use_evidence": true,
+        "hints": ["风险", "下行风险", "不确定性"],
+        "chunk_top_k": 8
+      }
+    },
+    {
+      "step_id": "build_comprehensive_answer",
+      "type": "explain",
+      "goal": "综合评级、目标价和风险，生成完整的研报分析摘要，包含：①评级及变动 ②目标价及估值依据 ③主要下行风险。decision字段：评级为增持/买入填rating_bullish；中性填rating_neutral；减持/卖出填rating_bearish。",
+      "depends_on": ["extract_analyst_rating", "extract_target_price", "extract_key_risks"],
+      "io": {
+        "inputs": [
+          "$step.extract_analyst_rating.output.analyst_rating",
+          "$step.extract_analyst_rating.output.rating_change",
+          "$step.extract_target_price.output.target_price",
+          "$step.extract_target_price.output.valuation_method",
+          "$step.extract_target_price.output.valuation_multiple",
+          "$step.extract_key_risks.output.key_risks"
+        ],
+        "outputs": [
+          {"key": "analyst_rating", "type": "string", "description": "分析师评级"},
+          {"key": "rating_change", "type": "string", "description": "评级变动"},
+          {"key": "target_price", "type": "number", "description": "目标价（元）"},
+          {"key": "valuation_method", "type": "string", "description": "估值方法"},
+          {"key": "key_risks", "type": "string", "description": "主要下行风险"},
+          {"key": "answer_text", "type": "string", "description": "完整研报分析摘要"},
+          {"key": "decision", "type": "string", "description": "rating_bullish / rating_neutral / rating_bearish"},
+          {"key": "evidence_refs", "type": "array", "description": "原文出处"}
+        ]
+      },
+      "executor": {"mode": "llm", "allowed_tools": []},
+      "constraints": {
+        "must_use_evidence": true,
+        "chunk_top_k": 10
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["analyst_rating", "target_price", "key_risks", "answer_text", "decision", "evidence_refs"],
+      "properties": {
+        "analyst_rating": {"type": "string"},
+        "rating_change": {"type": "string"},
+        "target_price": {"type": "number"},
+        "valuation_method": {"type": "string"},
+        "key_risks": {"type": "string"},
+        "answer_text": {"type": "string"},
+        "decision": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["analyst_rating", "target_price", "answer_text", "decision", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": [],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-04-03T00:00:00+00:00"
+    }
+  }
+}

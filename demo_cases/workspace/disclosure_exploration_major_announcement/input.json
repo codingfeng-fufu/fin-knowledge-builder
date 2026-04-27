@@ -1,0 +1,16 @@
+{
+  "entry": "workspace",
+  "question_text": "面对即将发布且表述模糊的重大公告，应适用什么规则？请给出处理意见，并说明为什么现有规则不足以直接复用。",
+  "scenario_id": "disclosure_clarification",
+  "related_questions": [
+    "面对即将发布且表述模糊的重大公告，应适用什么规则？请给出处理意见，并说明为什么现有规则不足以直接复用。",
+    "如果公告涉及重大合作变化，但表述模糊、可能误导外部，系统应如何进入探索并形成候选规则？",
+    "请基于这则公告语境，说明应该补什么规则，而不是直接套用旧规则。"
+  ],
+  "materials": [
+    {
+      "name": "重大公告语境.txt",
+      "path": "major_announcement_context.txt"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validator_ref.schema.json",
+  "type": "object",
+  "properties": {
+    "validator_id": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "error",
+        "warn"
+      ]
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "validator_id",
+    "target",
+    "severity"
+  ],
+  "additionalProperties": false
+}

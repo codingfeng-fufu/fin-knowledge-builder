@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dataset_manifest.schema.json",
+  "type": "object",
+  "properties": {
+    "dataset_id": {
+      "type": "string"
+    },
+    "scenario_name": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "dataset_id",
+    "scenario_name",
+    "generated_at",
+    "files"
+  ],
+  "additionalProperties": false
+}

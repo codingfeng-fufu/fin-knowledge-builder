@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "document_bundle_record.schema.json",
+  "type": "object",
+  "properties": {
+    "bundle_id": {
+      "type": "string"
+    },
+    "scenario_id": {
+      "type": "string"
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "$ref": "document_record.schema.json"
+      }
+    },
+    "facts": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "evidence_ref.schema.json"
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "bundle_id",
+    "scenario_id",
+    "documents",
+    "facts",
+    "evidence_refs",
+    "created_at",
+    "notes"
+  ],
+  "additionalProperties": false
+}

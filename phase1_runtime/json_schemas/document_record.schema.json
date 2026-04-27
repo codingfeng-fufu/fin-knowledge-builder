@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "document_record.schema.json",
+  "type": "object",
+  "properties": {
+    "doc_id": {
+      "type": "string"
+    },
+    "doc_type": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "doc_id",
+    "doc_type",
+    "title",
+    "language",
+    "source"
+  ],
+  "additionalProperties": false
+}

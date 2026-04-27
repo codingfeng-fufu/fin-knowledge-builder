@@ -1,0 +1,166 @@
+{
+  "rule_id": "atomic.notice_window_open.v1",
+  "name": "Atomic notice window open",
+  "status": "published",
+  "version": "v1",
+  "rule_kind": "atomic",
+  "rule_family": "credit_loan_extension_notice",
+  "trigger": {
+    "query_signals": ["展期", "续贷", "通知", "到期", "借款人"],
+    "question_types": ["policy_check"],
+    "intents": ["compare", "judge"]
+  },
+  "applicability": {
+    "document_types": ["contract", "policy"],
+    "scope": "适用于判断是否进入通知窗口的原子规则。",
+    "non_scope": "不负责最终通知结论输出。"
+  },
+  "inputs": {
+    "required": [
+      {
+        "key": "days_to_maturity",
+        "type": "number",
+        "description": "Days remaining until loan maturity.",
+        "hints": ["到期", "还有", "剩余", "天", "距离到期"]
+      },
+      {
+        "key": "notice_threshold_days",
+        "type": "number",
+        "description": "Contractual notice window in days before maturity.",
+        "hints": ["通知", "前", "日", "天", "到期前", "展期"]
+      }
+    ],
+    "optional": []
+  },
+  "steps": [
+    {
+      "step_id": "extract_days_to_maturity",
+      "type": "extract",
+      "goal": "从文档中找到贷款距离到期还有多少天（整数）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {
+            "key": "days_to_maturity",
+            "type": "number",
+            "description": "Days remaining until loan maturity."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "llm",
+        "allowed_tools": []
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    },
+    {
+      "step_id": "extract_notice_threshold_days",
+      "type": "extract",
+      "goal": "从文档中找到合同约定的通知窗口天数（整数，如到期前X日中的X）。",
+      "depends_on": [],
+      "io": {
+        "inputs": [],
+        "outputs": [
+          {
+            "key": "notice_threshold_days",
+            "type": "number",
+            "description": "Contractual notice window days."
+          },
+          {
+            "key": "evidence_refs",
+            "type": "array",
+            "description": "Evidence pointers."
+          }
+        ]
+      },
+      "executor": {
+        "mode": "llm",
+        "allowed_tools": []
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    },
+    {
+      "step_id": "atomic_check_notice_window",
+      "type": "judge",
+      "goal": "Determine whether the loan has entered the contractual notice window before maturity.",
+      "depends_on": ["extract_days_to_maturity", "extract_notice_threshold_days"],
+      "io": {
+        "inputs": [
+          "$step.extract_days_to_maturity.output.days_to_maturity",
+          "$step.extract_notice_threshold_days.output.notice_threshold_days"
+        ],
+        "outputs": [
+          {"key": "notice_window_open", "type": "boolean", "description": "Whether within notice window."},
+          {"key": "left_value", "type": "number", "description": "Days to maturity."},
+          {"key": "right_value", "type": "number", "description": "Notice threshold."},
+          {"key": "operator", "type": "string", "description": "Comparison operator."},
+          {"key": "evidence_refs", "type": "array", "description": "Evidence pointers."}
+        ]
+      },
+      "executor": {
+        "mode": "tool",
+        "tool": "compare_numeric",
+        "allowed_tools": ["compare_numeric"],
+        "config": {
+          "left_key": "days_to_maturity",
+          "right_key": "notice_threshold_days",
+          "operator": "<=",
+          "result_key": "notice_window_open",
+          "evidence_snippet_ids": ["snippet_notice_clause", "snippet_maturity_schedule"]
+        }
+      },
+      "constraints": {
+        "must_use_evidence": true
+      }
+    }
+  ],
+  "outputs": {
+    "answer_schema": {
+      "type": "object",
+      "required": ["notice_window_open", "left_value", "right_value", "operator", "evidence_refs"],
+      "properties": {
+        "notice_window_open": {"type": "boolean"},
+        "left_value": {"type": "number"},
+        "right_value": {"type": "number"},
+        "operator": {"type": "string"},
+        "evidence_refs": {"type": "array"}
+      }
+    },
+    "must_include": ["notice_window_open", "evidence_refs"]
+  },
+  "validators": [
+    {
+      "validator_id": "schema.validate",
+      "target": "step:atomic_check_notice_window",
+      "severity": "error"
+    },
+    {
+      "validator_id": "schema.validate",
+      "target": "final",
+      "severity": "error"
+    },
+    {
+      "validator_id": "evidence.required",
+      "target": "final",
+      "severity": "error"
+    }
+  ],
+  "provenance": {
+    "source_cases": ["case_credit_loan_extension_notice_001"],
+    "review": {
+      "review_status": "approved",
+      "reviewer": "rule_factory",
+      "reviewed_at": "2026-03-25T00:00:00+00:00"
+    }
+  }
+}
